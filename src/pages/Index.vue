@@ -92,7 +92,7 @@ import { createHash } from 'crypto';
 
 const NODE_URL = 'https://testnet.ckb.dev';
 const INDEXER_URL = 'https://testnet.ckb.dev/indexer';
-const UNIPASS_URL = 'https://unipass-woad.vercel.app/#/';
+const UNIPASS_URL = 'https://unipass-woad.vercel.app/';
 // const UNIPASS_URL = 'https://localhost:8080';
 
 export default defineComponent({
