@@ -9,7 +9,7 @@ import {
 } from '@lay2/pw-core';
 import { createHash } from 'crypto';
 
-type UP_ACT = 'UP-READY' | 'UP-LOGIN' | 'UP-SIGN' | 'UP-CLOSE' | 'UP-BIND';
+type UP_ACT = 'UP-READY' | 'UP-LOGIN' | 'UP-SIGN' | 'UP-CLOSE';
 
 export interface UnipassAccount {
   pubkey: string;
@@ -100,37 +100,6 @@ export default class UnipassProvider extends Provider {
       window.addEventListener('message', this.msgHandler, false);
     });
   }
-  // bind() {
-  //   return new Promise(resolve => {
-  //     const { blackOut, uniFrame } = openIframe(
-  //       'bind',
-  //       `${this.UNIPASS_BASE}/#/bind`,
-  //       () => {
-  //         const msg: UnipassMessage = {
-  //           upact: 'UP-SIGN',
-  //           payload: message
-  //         };
-  //         uniFrame.contentWindow &&
-  //           uniFrame.contentWindow.postMessage(msg, this.UNIPASS_BASE);
-  //       }
-  //     );
-  //     this.msgHandler = event => {
-  //       if (typeof event.data === 'object' && 'upact' in event.data) {
-  //         const msg = event.data as UnipassMessage;
-  //         if (msg.upact === 'UP-BIND') {
-  //           const signature = msg.payload as string;
-  //           console.log('[Bind] bind: ', signature);
-  //           this.msgHandler &&
-  //             window.removeEventListener('message', this.msgHandler);
-  //           blackOut && blackOut.remove();
-  //           resolve('0x' + signature);
-  //         }
-  //       }
-  //     };
-
-  //     window.addEventListener('message', this.msgHandler, false);
-  //   });
-  // }
 
   close() {
     this.msgHandler && window.removeEventListener('message', this.msgHandler);
