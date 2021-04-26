@@ -11,7 +11,7 @@ import { LocalStorage } from 'quasar';
 const KEY = 'unipass';
 interface UnipassData {
   email: string;
-  address: Address;
+  address: string;
   pubkey: string;
 }
 export function getData(): UnipassData {

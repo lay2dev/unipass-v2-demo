@@ -1,6 +1,7 @@
 import {
   Address,
   AddressType,
+  Blake2bHasher,
   getDefaultPrefix,
   HashType,
   Platform,
@@ -59,7 +60,8 @@ export default class UnipassProvider extends Provider {
               const { pubkey, email } = msg.payload as UnipassAccount;
               const ckbAddress = pubkeyToAddress(pubkey);
               this.address = new Address(ckbAddress, AddressType.ckb);
-              saveData({ email, pubkey, address: this.address });
+              console.log('address', this.address);
+              saveData({ email, pubkey, address: this.address.toCKBAddress() });
               this._email = email;
               this.msgHandler &&
                 window.removeEventListener('message', this.msgHandler);
@@ -71,7 +73,7 @@ export default class UnipassProvider extends Provider {
         window.addEventListener('message', this.msgHandler, false);
       } else {
         this._email = data.email;
-        this.address = data.address;
+        this.address = new Address(data.address, AddressType.ckb);
         resolve(this);
       }
     });
@@ -93,7 +95,7 @@ export default class UnipassProvider extends Provider {
             this.msgHandler &&
               window.removeEventListener('message', this.msgHandler);
             blackOut && blackOut.remove();
-            resolve('0x' + signature);
+            resolve(`0x01${signature.replace('0x', '')}`);
           } else if (msg.upact === 'UP-READY') {
             console.log('[UnipassProvider] sign READY');
             const msg: UnipassMessage = {
@@ -150,17 +152,16 @@ function openIframe(
 
 function pubkeyToAddress(pubkey: string): string {
   const pubKeyBuffer = Buffer.from(pubkey.replace('0x', ''), 'hex');
-  const hashHex =
-    '0x' +
-    createHash('SHA256')
-      .update(pubKeyBuffer)
-      .digest('hex')
-      .toString()
-      .slice(0, 40);
-  // console.log('hashHex', hashHex);
+
+  const hashHex = new Blake2bHasher()
+    .update(pubKeyBuffer.buffer)
+    .digest()
+    .serializeJson()
+    .slice(0, 42);
+  console.log('hashHex');
 
   const script = new Script(
-    '0x6843c5fe3acb7f4dc2230392813cb9c12dbced5597fca30a52f13aa519de8d33',
+    '0x124a60cd799e1fbca664196de46b3f7f0ecb7138133dcaea4893c51df5b02be6',
     hashHex,
     HashType.type
   );
