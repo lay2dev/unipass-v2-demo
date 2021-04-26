@@ -8,6 +8,7 @@ import {
   Script
 } from '@lay2/pw-core';
 import { createHash } from 'crypto';
+import { getData, saveData } from './LocalData';
 
 type UP_ACT = 'UP-READY' | 'UP-LOGIN' | 'UP-SIGN' | 'UP-CLOSE' | 'UP-BIND';
 
@@ -36,35 +37,43 @@ export default class UnipassProvider extends Provider {
 
   async init(): Promise<UnipassProvider> {
     return new Promise(resolve => {
-      const { blackOut, uniFrame } = openIframe(
-        'login',
-        `${this.UNIPASS_BASE}/#/login`,
-        () => {
-          const msg: UnipassMessage = {
-            upact: 'UP-LOGIN'
-          };
-          uniFrame.contentWindow &&
-            uniFrame.contentWindow.postMessage(msg, this.UNIPASS_BASE);
-        }
-      );
-
-      this.msgHandler = event => {
-        if (typeof event.data === 'object' && 'upact' in event.data) {
-          const msg = event.data as UnipassMessage;
-          if (msg.upact === 'UP-LOGIN') {
-            const { pubkey, email } = msg.payload as UnipassAccount;
-            const ckbAddress = pubkeyToAddress(pubkey);
-            this.address = new Address(ckbAddress, AddressType.ckb);
-            this._email = email;
-            this.msgHandler &&
-              window.removeEventListener('message', this.msgHandler);
-            blackOut && blackOut.remove();
-            resolve(this);
+      const data = getData();
+      console.log(data, '-----');
+      if (!data) {
+        const { blackOut, uniFrame } = openIframe(
+          'login',
+          `${this.UNIPASS_BASE}/#/login`,
+          () => {
+            const msg: UnipassMessage = {
+              upact: 'UP-LOGIN'
+            };
+            uniFrame.contentWindow &&
+              uniFrame.contentWindow.postMessage(msg, this.UNIPASS_BASE);
           }
-        }
-      };
+        );
 
-      window.addEventListener('message', this.msgHandler, false);
+        this.msgHandler = event => {
+          if (typeof event.data === 'object' && 'upact' in event.data) {
+            const msg = event.data as UnipassMessage;
+            if (msg.upact === 'UP-LOGIN') {
+              const { pubkey, email } = msg.payload as UnipassAccount;
+              const ckbAddress = pubkeyToAddress(pubkey);
+              this.address = new Address(ckbAddress, AddressType.ckb);
+              saveData({ email, pubkey, address: this.address });
+              this._email = email;
+              this.msgHandler &&
+                window.removeEventListener('message', this.msgHandler);
+              blackOut && blackOut.remove();
+              resolve(this);
+            }
+          }
+        };
+        window.addEventListener('message', this.msgHandler, false);
+      } else {
+        this._email = data.email;
+        this.address = data.address;
+        resolve(this);
+      }
     });
   }
 

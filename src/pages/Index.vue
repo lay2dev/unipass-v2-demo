@@ -92,13 +92,13 @@ import { createHash } from 'crypto';
 
 const NODE_URL = 'https://testnet.ckb.dev';
 const INDEXER_URL = 'https://testnet.ckb.dev/indexer';
-const UNIPASS_URL = 'https://unipass-woad.vercel.app/';
-// const UNIPASS_URL = 'https://localhost:8080';
+const UNIPASS_URL = 'https://unipass.me/';
+// const UNIPASS_URL = 'http://localhost:8080';
 
 export default defineComponent({
   name: 'PageIndex',
   setup() {
-    const provider = ref<UnipassProvider>();
+    let provider = ref<UnipassProvider>();
     const mode = ref('subtle');
     const message = ref('');
     const signature = ref('');
@@ -127,14 +127,13 @@ export default defineComponent({
           builder,
           signer
         );
-
         console.log('this.txHash', this.txHash);
       } catch (err) {
         console.error(err);
       }
     },
     async sign() {
-      if (!this.provider) throw new Error('Need Login');
+      // if (!this.provider) throw new Error('Need Login');
       console.log('[sign] message: ', this.message);
       // preprocess message before sign
       const messageHash = createHash('SHA256')
@@ -142,7 +141,7 @@ export default defineComponent({
         .digest('hex')
         .toString();
 
-      this.signature = await this.provider.sign(messageHash);
+      this.signature = await new UnipassProvider(UNIPASS_URL).sign(messageHash);
     },
     goto(url: string) {
       window.location.href = url;
