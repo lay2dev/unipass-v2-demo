@@ -22,3 +22,7 @@ export function saveData(data: UnipassData) {
   console.log(data);
   LocalStorage.set(KEY, data);
 }
+
+export function Logout() {
+  LocalStorage.remove(KEY);
+}

@@ -6,6 +6,16 @@
         <q-radio v-model="mode" val="subtle" label="Subtle" />
       </q-card-section>
     </q-card>
+    <q-select
+      dense
+      transition-show="jump-up"
+      transition-hide="jump-up"
+      square
+      input-class="text-bold"
+      v-model="url"
+      :display-value="url"
+      :options="urls"
+    />
     <q-card class="my-card">
       <q-card-section class="q-gutter-sm">
         <div class="row"><b>EMAIL:</b> {{ provider && provider.email }}</div>
@@ -71,6 +81,13 @@
           label="Sign"
           @click="sign"
         />
+        <q-btn
+          class="full-width"
+          color="info"
+          icon="check"
+          label="Logout"
+          @click="logout"
+        />
         <div class="row" style="word-break:break-all;">
           <b>SIGNATURE:</b> {{ signature }}
         </div>
@@ -89,15 +106,17 @@ import UnipassProvider from 'src/components/UnipassProvider';
 import UnipassBuilder from 'src/components/UnipassBuilder';
 import UnipassSigner from 'src/components/UnipassSigner';
 import { createHash } from 'crypto';
+import { Logout } from 'src/components/LocalData';
 
 const NODE_URL = 'https://testnet.ckb.dev';
 const INDEXER_URL = 'https://testnet.ckb.dev/indexer';
-// const UNIPASS_URL = 'https://unipass.me/';
-const UNIPASS_URL = 'https://localhost:8080';
+const UNIPASS_URL = 'https://unipass.me/';
+const UNIPASS_URL_LOCAL = 'http://localhost:8080';
 
 export default defineComponent({
   name: 'PageIndex',
   setup() {
+    const urls = [UNIPASS_URL, UNIPASS_URL_LOCAL];
     let provider = ref<UnipassProvider>();
     const mode = ref('subtle');
     const message = ref('');
@@ -105,12 +124,23 @@ export default defineComponent({
     const toAddress = ref('');
     const toAmount = ref(0);
     const txHash = ref('');
-    return { mode, provider, toAddress, toAmount, txHash, message, signature };
+
+    return {
+      mode,
+      url: ref(UNIPASS_URL),
+      provider,
+      toAddress,
+      toAmount,
+      txHash,
+      message,
+      signature,
+      urls
+    };
   },
   methods: {
     async login() {
       await new PWCore(NODE_URL).init(
-        new UnipassProvider(UNIPASS_URL),
+        new UnipassProvider(this.url),
         new IndexerCollector(INDEXER_URL)
       );
       this.provider = PWCore.provider as UnipassProvider;
@@ -141,11 +171,15 @@ export default defineComponent({
         .digest('hex')
         .toString();
 
-      console.log('[sign] sig requested to ', UNIPASS_URL);
-      this.signature = await new UnipassProvider(UNIPASS_URL).sign(messageHash);
+      console.log('[sign] sig requested to ', this.url);
+      this.signature = await new UnipassProvider(this.url).sign(messageHash);
     },
     goto(url: string) {
       window.location.href = url;
+    },
+    logout() {
+      Logout();
+      void window.location.reload();
     }
   }
 });
