@@ -31,7 +31,7 @@ export default class UnipassProvider extends Provider {
     return this._email;
   }
 
-  constructor(private readonly UNIPASS_BASE = 'https://unipass-s.vercel.app') {
+  constructor(private readonly UNIPASS_BASE = 'https://unipass.me') {
     super(Platform.ckb);
   }
 
@@ -82,15 +82,7 @@ export default class UnipassProvider extends Provider {
     return new Promise(resolve => {
       const { blackOut, uniFrame } = openIframe(
         'sign',
-        `${this.UNIPASS_BASE}/#/sign`,
-        () => {
-          const msg: UnipassMessage = {
-            upact: 'UP-SIGN',
-            payload: message
-          };
-          uniFrame.contentWindow &&
-            uniFrame.contentWindow.postMessage(msg, this.UNIPASS_BASE);
-        }
+        `${this.UNIPASS_BASE}/#/sign`
       );
       this.msgHandler = event => {
         if (typeof event.data === 'object' && 'upact' in event.data) {
@@ -102,6 +94,15 @@ export default class UnipassProvider extends Provider {
               window.removeEventListener('message', this.msgHandler);
             blackOut && blackOut.remove();
             resolve('0x' + signature);
+          } else if (msg.upact === 'UP-READY') {
+            console.log('[UnipassProvider] sign READY');
+            const msg: UnipassMessage = {
+              upact: 'UP-SIGN',
+              payload: message
+            };
+            uniFrame.contentWindow &&
+              uniFrame.contentWindow.postMessage(msg, this.UNIPASS_BASE);
+            console.log('[UnipassProvider] opend');
           }
         }
       };
@@ -109,37 +110,6 @@ export default class UnipassProvider extends Provider {
       window.addEventListener('message', this.msgHandler, false);
     });
   }
-  // bind() {
-  //   return new Promise(resolve => {
-  //     const { blackOut, uniFrame } = openIframe(
-  //       'bind',
-  //       `${this.UNIPASS_BASE}/#/bind`,
-  //       () => {
-  //         const msg: UnipassMessage = {
-  //           upact: 'UP-SIGN',
-  //           payload: message
-  //         };
-  //         uniFrame.contentWindow &&
-  //           uniFrame.contentWindow.postMessage(msg, this.UNIPASS_BASE);
-  //       }
-  //     );
-  //     this.msgHandler = event => {
-  //       if (typeof event.data === 'object' && 'upact' in event.data) {
-  //         const msg = event.data as UnipassMessage;
-  //         if (msg.upact === 'UP-BIND') {
-  //           const signature = msg.payload as string;
-  //           console.log('[Bind] bind: ', signature);
-  //           this.msgHandler &&
-  //             window.removeEventListener('message', this.msgHandler);
-  //           blackOut && blackOut.remove();
-  //           resolve('0x' + signature);
-  //         }
-  //       }
-  //     };
-
-  //     window.addEventListener('message', this.msgHandler, false);
-  //   });
-  // }
 
   close() {
     this.msgHandler && window.removeEventListener('message', this.msgHandler);
@@ -148,7 +118,7 @@ export default class UnipassProvider extends Provider {
 function openIframe(
   title: string,
   url: string,
-  onload: (this: GlobalEventHandlers, ev: Event) => unknown
+  onload?: (this: GlobalEventHandlers, ev: Event) => unknown
 ) {
   const uniFrame = document.createElement('iframe');
   uniFrame.src = url;
@@ -157,7 +127,7 @@ function openIframe(
   uniFrame.style.backgroundColor = '#FFF';
   uniFrame.setAttribute('scrolling', 'no');
   uniFrame.setAttribute('frameborder', 'no');
-  uniFrame.onload = onload;
+  onload && (uniFrame.onload = onload);
 
   const blackOut = document.createElement('div');
   blackOut.id = 'uni-frame';

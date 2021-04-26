@@ -92,8 +92,8 @@ import { createHash } from 'crypto';
 
 const NODE_URL = 'https://testnet.ckb.dev';
 const INDEXER_URL = 'https://testnet.ckb.dev/indexer';
-const UNIPASS_URL = 'https://unipass.me/';
-// const UNIPASS_URL = 'http://localhost:8080';
+// const UNIPASS_URL = 'https://unipass.me/';
+const UNIPASS_URL = 'https://localhost:8080';
 
 export default defineComponent({
   name: 'PageIndex',
@@ -141,6 +141,7 @@ export default defineComponent({
         .digest('hex')
         .toString();
 
+      console.log('[sign] sig requested to ', UNIPASS_URL);
       this.signature = await new UnipassProvider(UNIPASS_URL).sign(messageHash);
     },
     goto(url: string) {
