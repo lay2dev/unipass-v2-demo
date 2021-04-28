@@ -5,13 +5,13 @@ import { LocalStorage } from 'quasar';
  * @Author: Aven
  * @Date: 2021-04-26 14:18:43
  * @LastEditors: Aven
- * @LastEditTime: 2021-04-26 14:29:51
+ * @LastEditTime: 2021-04-28 11:49:27
  * @Description:
  */
 const KEY = 'unipass';
 interface UnipassData {
   email: string;
-  address: string;
+  address: Address;
   pubkey: string;
 }
 export function getData(): UnipassData {

@@ -8,7 +8,6 @@ import {
   Provider,
   Script
 } from '@lay2/pw-core';
-import { createHash } from 'crypto';
 import { getData, saveData } from './LocalData';
 
 type UP_ACT = 'UP-READY' | 'UP-LOGIN' | 'UP-SIGN' | 'UP-CLOSE' | 'UP-BIND';
@@ -61,7 +60,11 @@ export default class UnipassProvider extends Provider {
               const ckbAddress = pubkeyToAddress(pubkey);
               this.address = new Address(ckbAddress, AddressType.ckb);
               console.log('address', this.address);
-              saveData({ email, pubkey, address: this.address.toCKBAddress() });
+              saveData({
+                email,
+                pubkey,
+                address: new Address(ckbAddress, AddressType.ckb)
+              });
               this._email = email;
               this.msgHandler &&
                 window.removeEventListener('message', this.msgHandler);
@@ -73,7 +76,7 @@ export default class UnipassProvider extends Provider {
         window.addEventListener('message', this.msgHandler, false);
       } else {
         this._email = data.email;
-        this.address = new Address(data.address, AddressType.ckb);
+        this.address = data.address;
         resolve(this);
       }
     });
