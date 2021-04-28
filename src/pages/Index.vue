@@ -4,18 +4,19 @@
       <q-card-section class="row justify-around">
         <q-radio v-model="mode" val="webauthn" label="Webauthn" />
         <q-radio v-model="mode" val="subtle" label="Subtle" />
+        <q-select
+          behavior="menu"
+          filled
+          use-input
+          use-chips
+          input-class="text-bold"
+          new-value-mode="add-unique"
+          v-model="url"
+          :display-value="url"
+          :options="urls"
+        />
       </q-card-section>
     </q-card>
-    <q-select
-      dense
-      transition-show="jump-up"
-      transition-hide="jump-up"
-      square
-      input-class="text-bold"
-      v-model="url"
-      :display-value="url"
-      :options="urls"
-    />
     <q-card class="my-card">
       <q-card-section class="q-gutter-sm">
         <div class="row"><b>EMAIL:</b> {{ provider && provider.email }}</div>
@@ -29,6 +30,13 @@
           icon="login"
           label="Login"
           @click="login"
+        />
+        <q-btn
+          class="full-width"
+          color="info"
+          icon="check"
+          label="Logout"
+          @click="logout"
         />
       </q-card-section>
       <q-separator spaced />
@@ -81,13 +89,6 @@
           label="Sign"
           @click="sign"
         />
-        <q-btn
-          class="full-width"
-          color="info"
-          icon="check"
-          label="Logout"
-          @click="logout"
-        />
         <div class="row" style="word-break: break-all;">
           <b>SIGNATURE:</b> {{ signature }}
         </div>
@@ -132,7 +133,7 @@ export default defineComponent({
 
     return {
       mode,
-      url: ref(UNIPASS_URL),
+      url: ref(UNIPASS_URL_LOCAL),
       provider,
       toAddress,
       toAmount,
