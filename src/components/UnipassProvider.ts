@@ -103,6 +103,17 @@ export default class UnipassProvider extends Provider {
             uniFrame.contentWindow &&
               uniFrame.contentWindow.postMessage(msg, this.UNIPASS_BASE);
             console.log('[UnipassProvider] opend');
+          } else if (msg.upact === 'UP-LOGIN') {
+            const { pubkey, email } = msg.payload as UnipassAccount;
+            const ckbAddress = pubkeyToAddress(pubkey);
+            this.address = new Address(ckbAddress, AddressType.ckb);
+            saveData({ email, pubkey, address: this.address });
+            this._email = email;
+            this.msgHandler &&
+              window.removeEventListener('message', this.msgHandler);
+            blackOut && blackOut.remove();
+            // window.location.reload();
+            resolve('0x');
           }
         }
       };
