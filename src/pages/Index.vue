@@ -19,7 +19,7 @@
     <q-card class="my-card">
       <q-card-section class="q-gutter-sm">
         <div class="row"><b>EMAIL:</b> {{ provider && provider.email }}</div>
-        <div class="row" style="word-break:break-all;">
+        <div class="row" style="word-break: break-all;">
           <b>ADDRESS:</b> {{ provider && provider.address }}
         </div>
         <q-btn
@@ -56,7 +56,7 @@
           label="Send"
           @click="send"
         />
-        <div class="row" style="word-break:break-all;">
+        <div class="row" style="word-break: break-all;">
           <b>TX:</b>
           <a
             :href="`https://explorer.nervos.org/aggron/transaction/${txHash}`"
@@ -88,7 +88,7 @@
           label="Logout"
           @click="logout"
         />
-        <div class="row" style="word-break:break-all;">
+        <div class="row" style="word-break: break-all;">
           <b>SIGNATURE:</b> {{ signature }}
         </div>
       </q-card-section>
@@ -100,7 +100,12 @@
 </template>
 
 <script lang="ts">
-import PWCore, { Amount, IndexerCollector } from '@lay2/pw-core';
+import PWCore, {
+  Address,
+  AddressType,
+  Amount,
+  IndexerCollector,
+} from '@lay2/pw-core';
 import { defineComponent, ref } from '@vue/composition-api';
 import UnipassProvider from 'src/components/UnipassProvider';
 import UnipassBuilder from 'src/components/UnipassBuilder';
@@ -134,7 +139,7 @@ export default defineComponent({
       txHash,
       message,
       signature,
-      urls
+      urls,
     };
   },
   methods: {
@@ -148,8 +153,13 @@ export default defineComponent({
     async send() {
       try {
         if (!this.provider) throw new Error('Need Login');
+        console.log(
+          'this.provider.address',
+          this.provider.address.toCKBAddress()
+        );
         const builder = new UnipassBuilder(
-          this.provider.address,
+          // this.provider.address,
+          new Address(this.toAddress, AddressType.ckb),
           new Amount(`${this.toAmount}`)
         );
         const signer = new UnipassSigner(this.provider);
@@ -180,7 +190,7 @@ export default defineComponent({
     logout() {
       Logout();
       void window.location.reload();
-    }
-  }
+    },
+  },
 });
 </script>

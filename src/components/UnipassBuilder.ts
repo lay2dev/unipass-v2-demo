@@ -12,12 +12,31 @@ import PWCore, {
   OutPoint
 } from '@lay2/pw-core';
 
-const Secp256R1BinOutPoint = new OutPoint(
-  '0x9687ac5e311d009df1505459afc83a55c46496eb292fc11e4f6c24df5dfd4de5',
-  '0x0'
+const rsaDep = new CellDep(
+  DepType.code,
+  new OutPoint(
+    '0xd346695aa3293a84e9f985448668e9692892c959e7e83d6d8042e59c08b8cf5c',
+    '0x0'
+  )
 );
-const Secp256R1Args = {
-  lock: '0x' + '0'.repeat(1128),
+const acpDep = new CellDep(
+  DepType.code,
+  new OutPoint(
+    '0x04a1ac7fe15e454741d3c5c9a409efb9a967714ad2f530870514417978a9f655',
+    '0x0'
+  )
+);
+
+const unipassDep = new CellDep(
+  DepType.code,
+  new OutPoint(
+    '0xd12999a97fb8e881e285e159472f4468d98b24978aaebf1dc1a4b34e95604273',
+    '0x0'
+  )
+);
+
+const UnipassWitnessArgs = {
+  lock: '0x' + '0'.repeat(2082),
   input_type: '',
   output_type: ''
 };
@@ -61,11 +80,13 @@ export default class UnipassBuilder extends Builder {
       PWCore.provider.address.toLockScript()
     );
 
-    const r1CellDep: CellDep = new CellDep(DepType.code, Secp256R1BinOutPoint);
-
     const tx = new Transaction(
-      new RawTransaction(inputCells, [outputCell, changeCell], [r1CellDep]),
-      [Secp256R1Args]
+      new RawTransaction(
+        inputCells,
+        [outputCell, changeCell],
+        [rsaDep, acpDep, unipassDep]
+      ),
+      [UnipassWitnessArgs]
     );
 
     this.fee = Builder.calcFee(tx, this.feeRate);
