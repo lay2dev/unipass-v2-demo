@@ -117,12 +117,18 @@ import { Logout } from 'src/components/LocalData';
 const NODE_URL = 'https://testnet.ckb.dev';
 const INDEXER_URL = 'https://testnet.ckb.dev/indexer';
 const UNIPASS_URL = 'https://unipass.me/';
+const UNIPASS_URL_DEV = 'https://unipass-me-git-dev-lay2.vercel.app/';
 const UNIPASS_URL_LOCAL = 'http://localhost:8080';
 
 export default defineComponent({
   name: 'PageIndex',
+  beforeRouteEnter(to, from, next) {
+    console.log('from', from.path);
+    console.log('to', to.path);
+    next();
+  },
   setup() {
-    const urls = [UNIPASS_URL, UNIPASS_URL_LOCAL];
+    const urls = [UNIPASS_URL, UNIPASS_URL_DEV, UNIPASS_URL_LOCAL];
     let provider = ref<UnipassProvider>();
     const mode = ref('subtle');
     const message = ref('');

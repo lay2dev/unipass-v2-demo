@@ -162,21 +162,6 @@ function openIframe(
   onload && (uniFrame.onload = onload);
 
   document.body.appendChild(uniFrame);
-  // const blackOut = document.createElement('div');
-  // blackOut.id = 'uni-frame';
-  // blackOut.style.position = 'absolute';
-  // blackOut.style.zIndex = '2147483649';
-  // blackOut.style.left = '0';
-  // blackOut.style.top = '0';
-  // blackOut.style.width = '100%';
-  // blackOut.style.height = '100%';
-  // blackOut.style.backgroundColor = 'rgba(0,0,0,.65)';
-  // blackOut.style.display = 'flex';
-  // blackOut.style.justifyContent = 'center';
-  // blackOut.style.alignItems = 'center';
-
-  // blackOut.appendChild(uniFrame);
-  // document.body.appendChild(blackOut);
   return { uniFrame };
 }
 
