@@ -63,7 +63,7 @@ export default class UnipassProvider extends Provider {
               saveData({
                 email,
                 pubkey,
-                address: new Address(ckbAddress, AddressType.ckb)
+                address: ckbAddress
               });
               this._email = email;
               this.msgHandler &&
@@ -79,7 +79,7 @@ export default class UnipassProvider extends Provider {
         window.addEventListener('message', this.msgHandler, false);
       } else {
         this._email = data.email;
-        this.address = data.address;
+        this.address = new Address(data.address, AddressType.ckb);
         resolve(this);
       }
     });
@@ -112,7 +112,7 @@ export default class UnipassProvider extends Provider {
             const { pubkey, email } = msg.payload as UnipassAccount;
             const ckbAddress = pubkeyToAddress(pubkey);
             this.address = new Address(ckbAddress, AddressType.ckb);
-            saveData({ email, pubkey, address: this.address });
+            saveData({ email, pubkey, address: ckbAddress });
             this._email = email;
             this.msgHandler &&
               window.removeEventListener('message', this.msgHandler);
