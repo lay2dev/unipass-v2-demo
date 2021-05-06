@@ -30,7 +30,7 @@ const acpDep = new CellDep(
 const unipassDep = new CellDep(
   DepType.code,
   new OutPoint(
-    '0xd12999a97fb8e881e285e159472f4468d98b24978aaebf1dc1a4b34e95604273',
+    '0x63af71274b0150357820ca4ac7fd54dcd3c5812c3ec0030f3d0129b3854227d2',
     '0x0'
   )
 );
