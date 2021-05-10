@@ -90,6 +90,8 @@
           @click="sign"
         />
         <div class="row" style="word-break: break-all;">
+          <b>pubkey:</b> {{ pubkey }}
+          <br />
           <b>SIGNATURE:</b> {{ signature }}
         </div>
       </q-card-section>
@@ -105,10 +107,10 @@ import PWCore, {
   Address,
   AddressType,
   Amount,
-  IndexerCollector,
+  IndexerCollector
 } from '@lay2/pw-core';
 import { defineComponent, ref } from '@vue/composition-api';
-import UnipassProvider from 'src/components/UnipassProvider';
+import UnipassProvider, { UnipassSign } from 'src/components/UnipassProvider';
 import UnipassBuilder from 'src/components/UnipassBuilder';
 import UnipassSigner from 'src/components/UnipassSigner';
 import { createHash } from 'crypto';
@@ -119,6 +121,7 @@ const INDEXER_URL = 'https://testnet.ckb.dev/indexer';
 const UNIPASS_URL = 'https://unipass.me/';
 const UNIPASS_URL_DEV = 'https://unipass-me-git-dev-lay2.vercel.app/';
 const UNIPASS_URL_LOCAL = 'http://localhost:8080';
+const UNIPASS_URL_SIGN = 'https://unipass-me-ha1wl4u42-lay2.vercel.app/';
 
 export default defineComponent({
   name: 'PageIndex',
@@ -128,11 +131,17 @@ export default defineComponent({
     next();
   },
   setup() {
-    const urls = [UNIPASS_URL, UNIPASS_URL_DEV, UNIPASS_URL_LOCAL];
+    const urls = [
+      UNIPASS_URL,
+      UNIPASS_URL_DEV,
+      UNIPASS_URL_SIGN,
+      UNIPASS_URL_LOCAL
+    ];
     let provider = ref<UnipassProvider>();
     const mode = ref('subtle');
     const message = ref('');
     const signature = ref('');
+    const pubkey = ref('');
     const toAddress = ref('');
     const toAmount = ref(0);
     const txHash = ref('');
@@ -146,7 +155,8 @@ export default defineComponent({
       txHash,
       message,
       signature,
-      urls,
+      pubkey,
+      urls
     };
   },
   methods: {
@@ -189,7 +199,14 @@ export default defineComponent({
         .toString();
 
       console.log('[sign] sig requested to ', this.url);
-      this.signature = await new UnipassProvider(this.url).sign(messageHash);
+      const data = await new UnipassProvider(this.url).sign(messageHash);
+      if (data.startsWith('0x')) {
+        this.signature = data;
+      } else {
+        const info = JSON.parse(data) as UnipassSign;
+        this.pubkey = info.pubkey;
+        this.signature = `0x01${info.sign.replace('0x', '')}`;
+      }
     },
     goto(url: string) {
       window.location.href = url;
@@ -197,7 +214,7 @@ export default defineComponent({
     logout() {
       Logout();
       void window.location.reload();
-    },
-  },
+    }
+  }
 });
 </script>

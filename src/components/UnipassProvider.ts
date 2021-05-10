@@ -16,9 +16,13 @@ export interface UnipassAccount {
   pubkey: string;
   email: string;
 }
+export interface UnipassSign {
+  pubkey: string;
+  sign: string;
+}
 export interface UnipassMessage {
   upact: UP_ACT;
-  payload?: string | UnipassAccount;
+  payload?: string | UnipassAccount | UnipassSign;
 }
 
 export default class UnipassProvider extends Provider {
@@ -93,12 +97,21 @@ export default class UnipassProvider extends Provider {
         if (typeof event.data === 'object' && 'upact' in event.data) {
           const msg = event.data as UnipassMessage;
           if (msg.upact === 'UP-SIGN') {
-            const signature = msg.payload as string;
+            let signature;
+            if (typeof msg.payload == 'string') {
+              signature = msg.payload;
+            } else {
+              signature = JSON.stringify(msg.payload);
+            }
             console.log('[Sign] signature: ', signature);
             this.msgHandler &&
               window.removeEventListener('message', this.msgHandler);
             uniFrame && closeFrame(uniFrame);
-            resolve(`0x01${signature.replace('0x', '')}`);
+            if (typeof msg.payload == 'string') {
+              resolve(`0x01${signature.replace('0x', '')}`);
+            } else {
+              resolve(signature);
+            }
           } else if (msg.upact === 'UP-READY') {
             console.log('[UnipassProvider] sign READY');
             const msg: UnipassMessage = {
