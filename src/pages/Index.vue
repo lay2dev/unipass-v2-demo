@@ -31,15 +31,7 @@
           label="Login"
           @click="login"
         />
-        <q-btn
-          class="full-width"
-          color="primary"
-          type="submit"
-          icon="login"
-          no-caps
-          label="Re-sign Recovery Data"
-          @click="recovery"
-        />
+
         <q-btn
           class="full-width"
           color="info"
@@ -103,6 +95,17 @@
           <br />
           <b>SIGNATURE:</b> {{ signature }}
         </div>
+      </q-card-section>
+      <q-card-section>
+        <q-btn
+          class="full-width"
+          color="primary"
+          type="submit"
+          icon="login"
+          no-caps
+          label="Re-sign Recovery Data"
+          @click="recovery"
+        />
       </q-card-section>
     </q-card>
     <q-footer class="text-center" @click="goto('https://lay2.tech')">
