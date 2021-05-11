@@ -10,7 +10,13 @@ import {
 } from '@lay2/pw-core';
 import { getData, saveData } from './LocalData';
 
-type UP_ACT = 'UP-READY' | 'UP-LOGIN' | 'UP-SIGN' | 'UP-CLOSE' | 'UP-BIND';
+type UP_ACT =
+  | 'UP-READY'
+  | 'UP-LOGIN'
+  | 'UP-SIGN'
+  | 'UP-CLOSE'
+  | 'UP-BIND'
+  | 'UP-RECOVERY';
 
 export interface UnipassAccount {
   pubkey: string;
@@ -88,7 +94,48 @@ export default class UnipassProvider extends Provider {
       }
     });
   }
+  async recover(): Promise<UnipassProvider> {
+    console.log('[UnipassProvider] to recover');
+    return new Promise(resolve => {
+      const { uniFrame } = openIframe(
+        'login',
+        `${this.UNIPASS_BASE}/#/login`,
+        () => {
+          const msg: UnipassMessage = {
+            upact: 'UP-RECOVERY'
+          };
+          uniFrame.contentWindow &&
+            uniFrame.contentWindow.postMessage(msg, this.UNIPASS_BASE);
+        }
+      );
 
+      this.msgHandler = event => {
+        if (typeof event.data === 'object' && 'upact' in event.data) {
+          const msg = event.data as UnipassMessage;
+          if (msg.upact === 'UP-LOGIN') {
+            const { pubkey, email } = msg.payload as UnipassAccount;
+            const ckbAddress = pubkeyToAddress(pubkey);
+            this.address = new Address(ckbAddress, AddressType.ckb);
+            console.log('address', this.address);
+            saveData({
+              email,
+              pubkey,
+              address: ckbAddress
+            });
+            this._email = email;
+            this.msgHandler &&
+              window.removeEventListener('message', this.msgHandler);
+            uniFrame && closeFrame(uniFrame);
+            resolve(this);
+          } else if (msg.upact === 'UP-CLOSE') {
+            uniFrame && closeFrame(uniFrame);
+            resolve(this);
+          }
+        }
+      };
+      window.addEventListener('message', this.msgHandler, false);
+    });
+  }
   sign(message: string): Promise<string> {
     console.log('[UnipassProvider] message to sign', message);
     return new Promise(resolve => {

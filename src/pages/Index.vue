@@ -33,6 +33,15 @@
         />
         <q-btn
           class="full-width"
+          color="primary"
+          type="submit"
+          icon="login"
+          no-caps
+          label="Re-sign Recovery Data"
+          @click="recovery"
+        />
+        <q-btn
+          class="full-width"
           color="info"
           icon="check"
           label="Logout"
@@ -166,6 +175,9 @@ export default defineComponent({
         new IndexerCollector(INDEXER_URL)
       );
       this.provider = PWCore.provider as UnipassProvider;
+    },
+    async recovery() {
+      await new UnipassProvider(this.url).recover();
     },
     async send() {
       try {

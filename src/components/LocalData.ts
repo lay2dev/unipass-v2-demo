@@ -1,11 +1,10 @@
-import { Address } from '@lay2/pw-core';
 import { LocalStorage } from 'quasar';
 
 /*
  * @Author: Aven
  * @Date: 2021-04-26 14:18:43
  * @LastEditors: Aven
- * @LastEditTime: 2021-05-06 17:57:57
+ * @LastEditTime: 2021-05-10 23:35:13
  * @Description:
  */
 const KEY = 'unipass';
