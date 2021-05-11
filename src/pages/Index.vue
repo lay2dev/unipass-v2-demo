@@ -180,7 +180,7 @@ export default defineComponent({
       this.provider = PWCore.provider as UnipassProvider;
     },
     async recovery() {
-      await new UnipassProvider(this.url).recover();
+      this.provider = await new UnipassProvider(this.url).recover();
     },
     async send() {
       try {

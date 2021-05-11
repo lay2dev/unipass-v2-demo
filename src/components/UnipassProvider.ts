@@ -108,7 +108,6 @@ export default class UnipassProvider extends Provider {
             uniFrame.contentWindow.postMessage(msg, this.UNIPASS_BASE);
         }
       );
-
       this.msgHandler = event => {
         if (typeof event.data === 'object' && 'upact' in event.data) {
           const msg = event.data as UnipassMessage;
