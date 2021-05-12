@@ -106,6 +106,9 @@
           label="Re-sign Recovery Data"
           @click="recovery"
         />
+        <div class="row q-my-sm">
+          {{ success }}
+        </div>
       </q-card-section>
     </q-card>
     <q-footer class="text-center" @click="goto('https://lay2.tech')">
@@ -157,6 +160,7 @@ export default defineComponent({
     const toAddress = ref('');
     const toAmount = ref(0);
     const txHash = ref('');
+    const success = ref('');
 
     return {
       mode,
@@ -168,7 +172,8 @@ export default defineComponent({
       message,
       signature,
       pubkey,
-      urls
+      urls,
+      success
     };
   },
   methods: {
@@ -181,6 +186,9 @@ export default defineComponent({
     },
     async recovery() {
       this.provider = await new UnipassProvider(this.url).recover();
+      if (this.provider.email) {
+        this.success = '重签恢复数据成功';
+      }
     },
     async send() {
       try {
