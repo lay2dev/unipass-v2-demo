@@ -30,11 +30,11 @@ export const nets = [
   },
   {
     name: '正式-aggron',
-    url: 'https://t.unipasss.me'
+    url: 'https://t.unipass.me'
   },
   {
     name: '正式-lina',
-    url: 'https://unipasss.me'
+    url: 'https://unipass.me'
   }
 ];
 
@@ -105,7 +105,7 @@ export function cellDeps(): AllCellDeps {
 }
 
 export function saveEnvData(url: string) {
-  if (url == 'https://unipasss.me' || url == 'https://rc.unipass.me') {
+  if (url == 'https://unipass.me' || url == 'https://rc.unipass.me') {
     LocalStorage.set('lina', true);
   } else {
     LocalStorage.remove('lina');
