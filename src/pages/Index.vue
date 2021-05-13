@@ -4,17 +4,23 @@
       <q-card-section class="row justify-around">
         <q-radio v-model="mode" val="webauthn" label="Webauthn" />
         <q-radio v-model="mode" val="subtle" label="Subtle" />
-        <q-select
-          behavior="menu"
-          filled
-          use-input
-          use-chips
-          input-class="text-bold"
-          new-value-mode="add-unique"
-          v-model="url"
-          :display-value="url"
-          :options="urls"
-        />
+        <div>
+          <q-field> {{ url }}</q-field>
+          <q-select
+            behavior="menu"
+            filled
+            use-input
+            use-chips
+            input-class="text-bold"
+            new-value-mode="add-unique"
+            v-model="url"
+            :options="urls"
+            option-value="url"
+            option-label="name"
+            emit-value
+            map-options
+          />
+        </div>
       </q-card-section>
     </q-card>
     <q-card class="my-card">
@@ -130,14 +136,11 @@ import UnipassBuilder from 'src/components/UnipassBuilder';
 import UnipassSigner from 'src/components/UnipassSigner';
 import { createHash } from 'crypto';
 import { Logout } from 'src/components/LocalData';
+import { nets } from 'src/components/config';
+import { watch } from 'fs';
 
 const NODE_URL = 'https://testnet.ckb.dev';
 const INDEXER_URL = 'https://testnet.ckb.dev/indexer';
-const UNIPASS_URL = 'https://unipass.me/';
-const UNIPASS_URL_DEV = 'https://unipass-me-git-dev-lay2.vercel.app/';
-const UNIPASS_URL_LOCAL = 'http://localhost:8080';
-const UNIPASS_URL_SIGN = 'https://unipass-me-ha1wl4u42-lay2.vercel.app/';
-
 export default defineComponent({
   name: 'PageIndex',
   beforeRouteEnter(to, from, next) {
@@ -146,12 +149,7 @@ export default defineComponent({
     next();
   },
   setup() {
-    const urls = [
-      UNIPASS_URL,
-      UNIPASS_URL_DEV,
-      UNIPASS_URL_SIGN,
-      UNIPASS_URL_LOCAL
-    ];
+    const urls = nets;
     let provider = ref<UnipassProvider>();
     const mode = ref('subtle');
     const message = ref('');
@@ -164,7 +162,7 @@ export default defineComponent({
 
     return {
       mode,
-      url: ref(UNIPASS_URL_LOCAL),
+      url: urls[0].url,
       provider,
       toAddress,
       toAmount,
@@ -237,6 +235,11 @@ export default defineComponent({
     logout() {
       Logout();
       void window.location.reload();
+    }
+  },
+  watch: {
+    url(newVal: string) {
+      console.log(this.url);
     }
   }
 });
