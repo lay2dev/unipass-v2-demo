@@ -21,6 +21,7 @@ type UP_ACT =
 export interface UnipassAccount {
   pubkey: string;
   email: string;
+  recovery?: boolean;
 }
 export interface UnipassSign {
   pubkey: string;
@@ -33,12 +34,16 @@ export interface UnipassMessage {
 
 export default class UnipassProvider extends Provider {
   private _email: string | undefined;
+  private _recovery: boolean | undefined;
   private msgHandler:
     | ((this: Window, event: MessageEvent) => unknown)
     | undefined;
 
   get email() {
     return this._email;
+  }
+  get recovery() {
+    return this._recovery;
   }
 
   constructor(private readonly UNIPASS_BASE = 'https://unipass.me') {
@@ -112,7 +117,7 @@ export default class UnipassProvider extends Provider {
         if (typeof event.data === 'object' && 'upact' in event.data) {
           const msg = event.data as UnipassMessage;
           if (msg.upact === 'UP-LOGIN') {
-            const { pubkey, email } = msg.payload as UnipassAccount;
+            const { pubkey, email, recovery } = msg.payload as UnipassAccount;
             const ckbAddress = pubkeyToAddress(pubkey);
             this.address = new Address(ckbAddress, AddressType.ckb);
             console.log('address', this.address);
@@ -122,6 +127,7 @@ export default class UnipassProvider extends Provider {
               address: ckbAddress
             });
             this._email = email;
+            this._recovery = recovery as boolean;
             this.msgHandler &&
               window.removeEventListener('message', this.msgHandler);
             uniFrame && closeFrame(uniFrame);
