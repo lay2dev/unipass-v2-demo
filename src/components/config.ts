@@ -5,6 +5,10 @@ interface AllCellDeps {
   acpDep: CellDep;
   unipassDep: CellDep;
 }
+interface Url {
+  NODE_URL: string;
+  INDEXER_URL: string;
+}
 
 export const nets = [
   {
@@ -80,6 +84,15 @@ const LinaCellDeps = {
     )
   )
 };
+const testCKB = {
+  NODE_URL: 'https://testnet.ckb.dev',
+  INDEXER_URL: 'https://testnet.ckb.dev/indexer'
+};
+const mainCKB = {
+  NODE_URL: 'https://lina.ckb.dev',
+  INDEXER_URL: 'https://mainnet.ckb.dev/indexer'
+};
+
 export function cellDeps(): AllCellDeps {
   const isLina = LocalStorage.getItem('lina');
   let data = AggronCellDeps;
@@ -94,4 +107,12 @@ export function saveEnvData(url: string) {
   } else {
     LocalStorage.remove('lina');
   }
+}
+
+export function getCkbEnv(): Url {
+  const isLina = LocalStorage.getItem('lina');
+  let data = testCKB;
+  if (isLina) data = mainCKB;
+  console.log('[cells]:', isLina, data);
+  return data;
 }

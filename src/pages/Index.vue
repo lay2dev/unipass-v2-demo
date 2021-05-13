@@ -136,10 +136,7 @@ import UnipassBuilder from 'src/components/UnipassBuilder';
 import UnipassSigner from 'src/components/UnipassSigner';
 import { createHash } from 'crypto';
 import { Logout } from 'src/components/LocalData';
-import { nets, saveEnvData } from 'src/components/config';
-
-const NODE_URL = 'https://testnet.ckb.dev';
-const INDEXER_URL = 'https://testnet.ckb.dev/indexer';
+import { nets, saveEnvData, getCkbEnv } from 'src/components/config';
 export default defineComponent({
   name: 'PageIndex',
   beforeRouteEnter(to, from, next) {
@@ -175,9 +172,10 @@ export default defineComponent({
   },
   methods: {
     async login() {
-      await new PWCore(NODE_URL).init(
+      const url = getCkbEnv();
+      await new PWCore(url.NODE_URL).init(
         new UnipassProvider(this.url),
-        new IndexerCollector(INDEXER_URL)
+        new IndexerCollector(url.INDEXER_URL)
       );
       this.provider = PWCore.provider as UnipassProvider;
     },
@@ -200,7 +198,8 @@ export default defineComponent({
           new Amount(`${this.toAmount}`)
         );
         const signer = new UnipassSigner(this.provider);
-        this.txHash = await new PWCore(NODE_URL).sendTransaction(
+        const url = getCkbEnv();
+        this.txHash = await new PWCore(url.NODE_URL).sendTransaction(
           builder,
           signer
         );

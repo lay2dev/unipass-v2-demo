@@ -4,7 +4,7 @@ import { LocalStorage } from 'quasar';
  * @Author: Aven
  * @Date: 2021-04-26 14:18:43
  * @LastEditors: Aven
- * @LastEditTime: 2021-05-10 23:35:13
+ * @LastEditTime: 2021-05-13 19:52:16
  * @Description:
  */
 const KEY = 'unipass';
@@ -18,7 +18,6 @@ export function getData(): UnipassData {
 }
 
 export function saveData(data: UnipassData) {
-  console.log(data);
   LocalStorage.set(KEY, data);
 }
 
