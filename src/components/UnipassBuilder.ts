@@ -6,34 +6,9 @@ import PWCore, {
   RawTransaction,
   Transaction,
   Builder,
-  Collector,
-  CellDep,
-  DepType,
-  OutPoint
+  Collector
 } from '@lay2/pw-core';
-
-const rsaDep = new CellDep(
-  DepType.code,
-  new OutPoint(
-    '0xd346695aa3293a84e9f985448668e9692892c959e7e83d6d8042e59c08b8cf5c',
-    '0x0'
-  )
-);
-const acpDep = new CellDep(
-  DepType.code,
-  new OutPoint(
-    '0x04a1ac7fe15e454741d3c5c9a409efb9a967714ad2f530870514417978a9f655',
-    '0x0'
-  )
-);
-
-const unipassDep = new CellDep(
-  DepType.code,
-  new OutPoint(
-    '0x1dd7f9b7bde1ce261778abe693e739c9473b3f0c4a1a0f6f78dfec52927b6cbb',
-    '0x0'
-  )
-);
+import { cellDeps } from './config';
 
 const UnipassWitnessArgs = {
   lock: '0x' + '0'.repeat(2082),
@@ -74,17 +49,16 @@ export default class UnipassBuilder extends Builder {
         )}, got ${inputSum.toString(AmountUnit.ckb)}`
       );
     }
-
     const changeCell = new Cell(
       inputSum.sub(outputCell.capacity),
       PWCore.provider.address.toLockScript()
     );
-
+    const cellsDeps = cellDeps();
     const tx = new Transaction(
       new RawTransaction(
         inputCells,
         [outputCell, changeCell],
-        [rsaDep, acpDep, unipassDep]
+        [cellsDeps.rsaDep, cellsDeps.acpDep, cellsDeps.unipassDep]
       ),
       [UnipassWitnessArgs]
     );
@@ -93,7 +67,6 @@ export default class UnipassBuilder extends Builder {
       changeCell.capacity = changeCell.capacity.sub(this.fee);
       tx.raw.outputs.pop();
       tx.raw.outputs.push(changeCell);
-      console.log(JSON.stringify(tx), 'rectifyTx');
       return tx;
     }
     return this.build(this.fee);

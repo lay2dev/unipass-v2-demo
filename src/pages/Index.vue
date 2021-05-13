@@ -136,8 +136,7 @@ import UnipassBuilder from 'src/components/UnipassBuilder';
 import UnipassSigner from 'src/components/UnipassSigner';
 import { createHash } from 'crypto';
 import { Logout } from 'src/components/LocalData';
-import { nets } from 'src/components/config';
-import { watch } from 'fs';
+import { nets, saveEnvData } from 'src/components/config';
 
 const NODE_URL = 'https://testnet.ckb.dev';
 const INDEXER_URL = 'https://testnet.ckb.dev/indexer';
@@ -239,7 +238,8 @@ export default defineComponent({
   },
   watch: {
     url(newVal: string) {
-      console.log(this.url);
+      console.log(newVal);
+      saveEnvData(newVal);
     }
   }
 });
