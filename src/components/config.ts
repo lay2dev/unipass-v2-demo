@@ -1,5 +1,9 @@
 export const nets = [
   {
+    name: '测试',
+    url: 'https://unipass-me-git-dev-lay2.vercel.app/'
+  },
+  {
     name: '开发-aggron',
     url: 'https://dev.unipass.me'
   },
@@ -18,9 +22,5 @@ export const nets = [
   {
     name: '正式-lina',
     url: 'https://unipasss.me'
-  },
-  {
-    name: '测试',
-    url: 'https://unipass-me-git-dev-lay2.vercel.app/'
   }
 ];

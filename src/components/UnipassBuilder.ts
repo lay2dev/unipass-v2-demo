@@ -30,7 +30,7 @@ const acpDep = new CellDep(
 const unipassDep = new CellDep(
   DepType.code,
   new OutPoint(
-    '0x63af71274b0150357820ca4ac7fd54dcd3c5812c3ec0030f3d0129b3854227d2',
+    '0x1dd7f9b7bde1ce261778abe693e739c9473b3f0c4a1a0f6f78dfec52927b6cbb',
     '0x0'
   )
 );
@@ -88,16 +88,14 @@ export default class UnipassBuilder extends Builder {
       ),
       [UnipassWitnessArgs]
     );
-
     this.fee = Builder.calcFee(tx, this.feeRate);
-
     if (changeCell.capacity.gte(Builder.MIN_CHANGE.add(this.fee))) {
       changeCell.capacity = changeCell.capacity.sub(this.fee);
       tx.raw.outputs.pop();
       tx.raw.outputs.push(changeCell);
+      console.log(JSON.stringify(tx), 'rectifyTx');
       return tx;
     }
-
     return this.build(this.fee);
   }
 
