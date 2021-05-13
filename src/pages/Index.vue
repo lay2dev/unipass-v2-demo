@@ -158,7 +158,7 @@ export default defineComponent({
     const toAmount = ref(0);
     const txHash = ref('');
     const success = ref('');
-
+    saveEnvData(urls[0].url);
     return {
       mode,
       url: urls[0].url,
