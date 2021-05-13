@@ -227,7 +227,9 @@ function openIframe(
 function closeFrame(frame: HTMLIFrameElement) {
   console.log('[UnipassProvider] close frame');
   frame.remove();
+  console.log('[UnipassProvider] frame.remove');
   document.body.style.removeProperty('overflow');
+  console.log('[UnipassProvider] document.body.style.removeProperty()');
 }
 
 function pubkeyToAddress(pubkey: string): string {
