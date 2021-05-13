@@ -175,7 +175,8 @@ export default defineComponent({
       const url = getCkbEnv();
       await new PWCore(url.NODE_URL).init(
         new UnipassProvider(this.url),
-        new IndexerCollector(url.INDEXER_URL)
+        new IndexerCollector(url.INDEXER_URL),
+        url.CHAIN_ID
       );
       this.provider = PWCore.provider as UnipassProvider;
     },

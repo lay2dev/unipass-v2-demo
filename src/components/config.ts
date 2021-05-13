@@ -1,4 +1,4 @@
-import { CellDep, DepType, OutPoint } from '@lay2/pw-core';
+import { CellDep, ChainID, DepType, OutPoint } from '@lay2/pw-core';
 import { LocalStorage } from 'quasar';
 interface AllCellDeps {
   rsaDep: CellDep;
@@ -8,6 +8,7 @@ interface AllCellDeps {
 interface Url {
   NODE_URL: string;
   INDEXER_URL: string;
+  CHAIN_ID: ChainID;
 }
 
 export const nets = [
@@ -86,11 +87,13 @@ const LinaCellDeps = {
 };
 const testCKB = {
   NODE_URL: 'https://testnet.ckb.dev',
-  INDEXER_URL: 'https://testnet.ckb.dev/indexer'
+  INDEXER_URL: 'https://testnet.ckb.dev/indexer',
+  CHAIN_ID: ChainID.ckb_testnet
 };
 const mainCKB = {
   NODE_URL: 'https://lina.ckb.dev',
-  INDEXER_URL: 'https://mainnet.ckb.dev/indexer'
+  INDEXER_URL: 'https://mainnet.ckb.dev/indexer',
+  CHAIN_ID: ChainID.ckb
 };
 
 export function cellDeps(): AllCellDeps {
