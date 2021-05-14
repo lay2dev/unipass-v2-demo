@@ -184,6 +184,8 @@ export default defineComponent({
       this.provider = await new UnipassProvider(this.url).recover();
       if (this.provider.recovery) {
         this.success = '重签恢复数据成功';
+      } else {
+        this.success = '重签恢复数据失败';
       }
     },
     async send() {
