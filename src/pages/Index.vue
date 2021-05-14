@@ -185,7 +185,7 @@ export default defineComponent({
       if (this.provider.recovery) {
         this.success = '重签恢复数据成功';
       } else {
-        this.success = '重签恢复数据失败';
+        this.success = '重签恢复数据失败，请联系unipass团队';
       }
     },
     async send() {
