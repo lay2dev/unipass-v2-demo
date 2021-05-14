@@ -8,6 +8,7 @@ import {
   Provider,
   Script
 } from '@lay2/pw-core';
+import { LocalStorage } from 'quasar';
 import { getData, saveData } from './LocalData';
 
 type UP_ACT =
@@ -247,12 +248,21 @@ function pubkeyToAddress(pubkey: string): string {
     .serializeJson()
     .slice(0, 42);
   console.log('hashHex');
-
-  const script = new Script(
-    '0x124a60cd799e1fbca664196de46b3f7f0ecb7138133dcaea4893c51df5b02be6',
-    hashHex,
-    HashType.type
-  );
+  const isLina = LocalStorage.getItem('lina');
+  let script: Script;
+  if (isLina) {
+    script = new Script(
+      '0x614d40a86e1b29a8f4d8d93b9f3b390bf740803fa19a69f1c95716e029ea09b3',
+      hashHex,
+      HashType.type
+    );
+  } else {
+    script = new Script(
+      '0x124a60cd799e1fbca664196de46b3f7f0ecb7138133dcaea4893c51df5b02be6',
+      hashHex,
+      HashType.type
+    );
+  }
 
   return script.toAddress(getDefaultPrefix()).toCKBAddress();
 }
