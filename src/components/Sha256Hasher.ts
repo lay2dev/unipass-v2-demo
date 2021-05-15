@@ -1,7 +1,5 @@
-import { Hasher } from '@lay2/pw-core';
-import { Reader } from 'ckb-js-toolkit';
+import { Hasher, Reader } from '@lay2/pw-core';
 import { createHash } from 'crypto';
-
 
 export default class Sha256Hasher extends Hasher {
   constructor() {
