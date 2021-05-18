@@ -137,6 +137,8 @@ import UnipassSigner from 'src/components/UnipassSigner';
 import { createHash } from 'crypto';
 import { Logout } from 'src/components/LocalData';
 import { nets, saveEnvData, getCkbEnv } from 'src/components/config';
+// import utils from 'src/compositions/utils.js'
+
 export default defineComponent({
   name: 'PageIndex',
   beforeRouteEnter(to, from, next) {
@@ -179,6 +181,12 @@ export default defineComponent({
         url.CHAIN_ID
       );
       this.provider = PWCore.provider as UnipassProvider;
+
+      // const host = 'http://localhost:3000'
+      // const query = utils.query({
+      //   cb: window.location.href
+      // })
+      // window.location.replace(`${host}/login?${query as string}`)
     },
     async recovery() {
       this.provider = await new UnipassProvider(this.url).recover();
@@ -242,7 +250,13 @@ export default defineComponent({
     url(newVal: string) {
       console.log(newVal);
       saveEnvData(newVal);
-    }
+    },
+  },
+  created() {
+    // const query = this.$route.query
+    // if (query.masterKey) {
+    //   console.log('query', query)
+    // }
   }
 });
 </script>
