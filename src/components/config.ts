@@ -19,6 +19,8 @@ export const nets = [
   {
     name: '测试',
     url: 'https://unipass-me-git-dev-lay2.vercel.app/'
+    // name: '本地',
+    // url: 'http://localhost:3000/'
   },
   {
     name: '开发-aggron',
