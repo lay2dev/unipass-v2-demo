@@ -12,6 +12,10 @@ interface Url {
 }
 
 export const nets = [
+  // {
+  //   name: '本地',
+  //   url: 'http://localhost:3000/'
+  // },
   {
     name: '测试',
     url: 'https://unipass-me-git-dev-lay2.vercel.app/'
@@ -85,6 +89,30 @@ const LinaCellDeps = {
     )
   )
 };
+
+const TestCellDeps = {
+  rsaDep: new CellDep(
+    DepType.code,
+    new OutPoint(
+      '0xd7022ca7f883ffa7e067bf0ecd945fefa49b3a0c82d3edb6939f976b53a6069f',
+      '0x0'
+    )
+  ),
+  acpDep: new CellDep(
+    DepType.code,
+    new OutPoint(
+      '0x363b22a0de38c31e83fb83fa7210c447a4861408f1c56502f545cfffda25d9cc',
+      '0x0'
+    )
+  ),
+  unipassDep: new CellDep(
+    DepType.code,
+    new OutPoint(
+      '0x01e18325376c649237a41b2d79f32bc793c51d25dfa250f2611161042e71f942',
+      '0x0'
+    )
+  )
+};
 const testCKB = {
   NODE_URL: 'https://testnet.ckb.dev',
   INDEXER_URL: 'https://testnet.ckb.dev/indexer',
@@ -98,17 +126,24 @@ const mainCKB = {
 
 export function cellDeps(): AllCellDeps {
   const isLina = LocalStorage.getItem('lina');
+  const isTest = LocalStorage.getItem('test');
   let data = AggronCellDeps;
   if (isLina) data = LinaCellDeps;
-  console.log('[cells]:', isLina, data);
+  if (isTest) data = TestCellDeps;
+  console.log('[cells]:', isLina, isTest, data);
   return data;
 }
 
 export function saveEnvData(url: string) {
   if (url == 'https://unipass.me' || url == 'https://rc.unipass.me') {
     LocalStorage.set('lina', true);
+    LocalStorage.remove('test');
+  } else if (url == 'https://unipass-me-git-dev-lay2.vercel.app/') {
+    LocalStorage.set('test', true);
+    LocalStorage.remove('lina');
   } else {
     LocalStorage.remove('lina');
+    LocalStorage.remove('test');
   }
 }
 

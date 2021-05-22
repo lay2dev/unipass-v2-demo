@@ -247,12 +247,18 @@ function pubkeyToAddress(pubkey: string): string {
     .digest()
     .serializeJson()
     .slice(0, 42);
-  console.log('hashHex');
   const isLina = LocalStorage.getItem('lina');
+  const isTest = LocalStorage.getItem('test');
   let script: Script;
   if (isLina) {
     script = new Script(
       '0x614d40a86e1b29a8f4d8d93b9f3b390bf740803fa19a69f1c95716e029ea09b3',
+      hashHex,
+      HashType.type
+    );
+  } else if (isTest) {
+    script = new Script(
+      '0x949db47aac7d1a2a0d921344dc5c1ddefda390813a1881d56a0872d798e0d629',
       hashHex,
       HashType.type
     );
