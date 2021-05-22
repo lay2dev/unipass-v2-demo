@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Hasher, Reader } from '@lay2/pw-core';
 import { createHash } from 'crypto';
 
@@ -9,7 +12,7 @@ export default class Sha256Hasher extends Hasher {
   update(data: string | ArrayBuffer | Reader): Hasher {
     let array: Buffer;
     if (data instanceof Reader) {
-      /** Reader type params not enter this branch, it's weired */
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       array = Buffer.from(data.serializeJson().replace('0x', ''));
     } else if (data instanceof ArrayBuffer) {
       array = Buffer.from(new Uint8Array(data));
