@@ -60,7 +60,7 @@ const AggronCellDeps = {
   unipassDep: new CellDep(
     DepType.code,
     new OutPoint(
-      '0x1dd7f9b7bde1ce261778abe693e739c9473b3f0c4a1a0f6f78dfec52927b6cbb',
+      '0x5b1243781d0599b681b3b43ea164e7ee75dcf7873e7e233e2baed49637d57216',
       '0x0'
     )
   )
