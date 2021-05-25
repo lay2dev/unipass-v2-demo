@@ -84,7 +84,7 @@ const LinaCellDeps = {
   unipassDep: new CellDep(
     DepType.code,
     new OutPoint(
-      '0xb5fc7ded3d559e764ec2afe53ce82bc01632be1e0d9b0a38268f115de5a564c1',
+      '0xbd908ef38e47063f6a05485cdc421b6678c3556f56a263f90b127c2cda08369a',
       '0x0'
     )
   )
