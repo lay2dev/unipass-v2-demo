@@ -147,6 +147,27 @@ export default defineComponent({
     console.log('to', to.path);
     next();
   },
+  async created() {
+    try {
+      getDataFromUrl();
+      const data = getData();
+      if (data.sig) {
+        this.key = data.pubkey;
+        this.signature = `0x01${data.sig.replace('0x', '')}`;
+      }
+      if (data.address) {
+        const url = getCkbEnv();
+        await new PWCore(url.NODE_URL).init(
+          new UnipassProvider(this.url),
+          new IndexerCollector(url.INDEXER_URL),
+          url.CHAIN_ID
+        );
+        this.provider = PWCore.provider as UnipassProvider;
+      }
+    } catch (e) {
+      return;
+    }
+  },
   setup() {
     const urls = nets;
     let provider = ref<UnipassProvider>();
@@ -159,24 +180,6 @@ export default defineComponent({
     const txHash = ref('');
     const success = ref('');
     saveEnvData(urls[0].url);
-    getDataFromUrl();
-    const data = getData();
-    if (data.sig) {
-      pubkey.value = data.pubkey;
-      signature.value = `0x01${data.sig.replace('0x', '')}`;
-    }
-    onMounted(async () => {
-      const data = getData();
-      if (data.address) {
-        const url = getCkbEnv();
-        await new PWCore(url.NODE_URL).init(
-          new UnipassProvider(urls[0].url),
-          new IndexerCollector(url.INDEXER_URL),
-          url.CHAIN_ID
-        );
-        provider.value = PWCore.provider as UnipassProvider;
-      }
-    });
     return {
       mode,
       url: urls[0].url,
@@ -194,11 +197,12 @@ export default defineComponent({
 
   methods: {
     async login() {
+      console.log(this.url, nets);
       if (this.mode == 'urlCallBack') {
         const host = this.url;
         const success_url = window.location.origin;
         const fail_url = window.location.origin;
-        window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
+        // window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
       } else {
         const url = getCkbEnv();
         await new PWCore(url.NODE_URL).init(
@@ -280,12 +284,6 @@ export default defineComponent({
       console.log(newVal);
       saveEnvData(newVal);
     }
-  },
-  created() {
-    // const query = this.$route.query
-    // if (query.masterKey) {
-    //   console.log('query', query)
-    // }
   }
 });
 </script>
