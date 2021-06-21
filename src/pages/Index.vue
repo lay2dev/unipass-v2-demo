@@ -136,6 +136,7 @@ import PWCore, {
   SerializeWitnessArgs,
   WitnessArgs,
   transformers,
+  Message,
 } from '@lay2/pw-core';
 import { defineComponent, ref } from '@vue/composition-api';
 import UnipassProvider, { UnipassSign } from 'src/components/UnipassProvider';
@@ -155,7 +156,7 @@ export enum ActionType {
 }
 
 export interface PageState {
-  action: string;
+  action: ActionType;
   data: PageData;
   extraObj: string;
 }
@@ -212,7 +213,8 @@ export default defineComponent({
           }
           break;
         case ActionType.SendTx:
-          await this.sendTxCallback(data.sig, pageState?.extraObj);
+          if (data.sig)
+            await this.sendTxCallback(data.sig, pageState?.extraObj);
           break;
       }
     } catch (e) {
@@ -344,7 +346,8 @@ export default defineComponent({
         console.error(err);
       }
     },
-    async sendTxCallback(sig: string, extraObj: string) {
+    async sendTxCallback(sig: string, extraObj: string | undefined) {
+      if (!extraObj) return;
       try {
         console.log('sendTxCallback sig', sig);
         console.log('sendTxCallback extraObj', extraObj);
