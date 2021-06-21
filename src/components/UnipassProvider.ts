@@ -239,7 +239,7 @@ function closeFrame(frame: HTMLIFrameElement) {
   console.log('[UnipassProvider] document.body.style.removeProperty()');
 }
 
-function pubkeyToAddress(pubkey: string): string {
+export function pubkeyToAddress(pubkey: string): string {
   const pubKeyBuffer = Buffer.from(pubkey.replace('0x', ''), 'hex');
 
   const hashHex = new Blake2bHasher()

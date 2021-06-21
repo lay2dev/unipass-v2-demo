@@ -17,7 +17,8 @@
     "@vue/composition-api": "^1.0.0-rc.3",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
-    "quasar": "^1.0.0"
+    "quasar": "^1.0.0",
+    "urlencode": "^1.1.0"
   },
   "devDependencies": {
     "@quasar/app": "^2.0.0",
@@ -26,6 +27,7 @@
     "@typescript-eslint/eslint-plugin": "^4.16.1",
     "@typescript-eslint/parser": "^4.16.1",
     "babel-eslint": "^10.0.1",
+    "@types/urlencode": "^1.1.2",
     "eslint": "^7.21.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^7.7.0"

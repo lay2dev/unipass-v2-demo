@@ -4,6 +4,7 @@
       <q-card-section class="row justify-around">
         <q-radio v-model="mode" val="webauthn" label="Webauthn" />
         <q-radio v-model="mode" val="subtle" label="Subtle" />
+        <q-radio v-model="mode" val="urlCallBack" label="UrlCallBack" />
         <div>
           <q-field> {{ url }}</q-field>
           <q-select
@@ -130,14 +131,14 @@ import PWCore, {
   Amount,
   IndexerCollector
 } from '@lay2/pw-core';
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import UnipassProvider, { UnipassSign } from 'src/components/UnipassProvider';
 import UnipassBuilder from 'src/components/UnipassBuilder';
 import UnipassSigner from 'src/components/UnipassSigner';
 import { createHash } from 'crypto';
-import { Logout } from 'src/components/LocalData';
+import { Logout, getData } from 'src/components/LocalData';
 import { nets, saveEnvData, getCkbEnv } from 'src/components/config';
-// import utils from 'src/compositions/utils.js'
+import { getDataFromUrl, getPublick, getSignData } from 'src/components/utils';
 
 export default defineComponent({
   name: 'PageIndex',
@@ -149,7 +150,7 @@ export default defineComponent({
   setup() {
     const urls = nets;
     let provider = ref<UnipassProvider>();
-    const mode = ref('subtle');
+    const mode = ref('urlCallBack');
     const message = ref('');
     const signature = ref('');
     const pubkey = ref('');
@@ -158,6 +159,24 @@ export default defineComponent({
     const txHash = ref('');
     const success = ref('');
     saveEnvData(urls[0].url);
+    getDataFromUrl();
+    const data = getData();
+    if (data.sig) {
+      pubkey.value = data.pubkey;
+      signature.value = `0x01${data.sig.replace('0x', '')}`;
+    }
+    onMounted(async () => {
+      const data = getData();
+      if (data.address) {
+        const url = getCkbEnv();
+        await new PWCore(url.NODE_URL).init(
+          new UnipassProvider(urls[0].url),
+          new IndexerCollector(url.INDEXER_URL),
+          url.CHAIN_ID
+        );
+        provider.value = PWCore.provider as UnipassProvider;
+      }
+    });
     return {
       mode,
       url: urls[0].url,
@@ -172,21 +191,23 @@ export default defineComponent({
       success
     };
   },
+
   methods: {
     async login() {
-      const url = getCkbEnv();
-      await new PWCore(url.NODE_URL).init(
-        new UnipassProvider(this.url),
-        new IndexerCollector(url.INDEXER_URL),
-        url.CHAIN_ID
-      );
-      this.provider = PWCore.provider as UnipassProvider;
-
-      // const host = 'http://localhost:3000'
-      // const query = utils.query({
-      //   cb: window.location.href
-      // })
-      // window.location.replace(`${host}/login?${query as string}`)
+      if (this.mode == 'urlCallBack') {
+        const host = 'http://localhost:3000';
+        const success_url = 'http://localhost:4000';
+        const fail_url = 'http://localhost:4000';
+        window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
+      } else {
+        const url = getCkbEnv();
+        await new PWCore(url.NODE_URL).init(
+          new UnipassProvider(this.url),
+          new IndexerCollector(url.INDEXER_URL),
+          url.CHAIN_ID
+        );
+        this.provider = PWCore.provider as UnipassProvider;
+      }
     },
     async recovery() {
       this.provider = await new UnipassProvider(this.url).recover();
@@ -220,22 +241,30 @@ export default defineComponent({
       }
     },
     async sign() {
-      // if (!this.provider) throw new Error('Need Login');
-      console.log('[sign] message: ', this.message);
-      // preprocess message before sign
+      console.log('[sign] message: ', this.mode);
       const messageHash = createHash('SHA256')
-        .update(this.message)
+        .update(this.message || '0x')
         .digest('hex')
         .toString();
-
-      console.log('[sign] sig requested to ', this.url);
-      const data = await new UnipassProvider(this.url).sign(messageHash);
-      if (data.startsWith('0x')) {
-        this.signature = data;
+      if (this.mode == 'urlCallBack') {
+        const host = 'http://localhost:3000';
+        const success_url = 'http://localhost:4000';
+        const fail_url = 'http://localhost:4000';
+        const pubkey = getPublick();
+        if (!pubkey) return;
+        const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
+        console.log(_url);
+        window.location.href = _url;
       } else {
-        const info = JSON.parse(data) as UnipassSign;
-        this.pubkey = info.pubkey;
-        this.signature = `0x01${info.sign.replace('0x', '')}`;
+        console.log('[sign] sig requested to ', this.url);
+        const data = await new UnipassProvider(this.url).sign(messageHash);
+        if (data.startsWith('0x')) {
+          this.signature = data;
+        } else {
+          const info = JSON.parse(data) as UnipassSign;
+          this.pubkey = info.pubkey;
+          this.signature = `0x01${info.sign.replace('0x', '')}`;
+        }
       }
     },
     goto(url: string) {
@@ -250,7 +279,7 @@ export default defineComponent({
     url(newVal: string) {
       console.log(newVal);
       saveEnvData(newVal);
-    },
+    }
   },
   created() {
     // const query = this.$route.query

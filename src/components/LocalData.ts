@@ -8,10 +8,11 @@ import { LocalStorage } from 'quasar';
  * @Description:
  */
 const KEY = 'unipass';
-interface UnipassData {
+export interface UnipassData {
   email: string;
   address: string;
   pubkey: string;
+  sig?: string;
 }
 export function getData(): UnipassData {
   return LocalStorage.getItem(KEY) as UnipassData;
