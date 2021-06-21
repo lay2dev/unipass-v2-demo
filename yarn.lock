@@ -9768,7 +9768,7 @@ url@^0.11.0:
 
 urlencode@^1.1.0:
   version "1.1.0"
-  resolved "https://mirrors.tencent.com/npm/urlencode/-/urlencode-1.1.0.tgz#1f2ba26f013c85f0133f7a3ad6ff2730adf7cbb7"
+  resolved "https://registry.yarnpkg.com/urlencode/-/urlencode-1.1.0.tgz#1f2ba26f013c85f0133f7a3ad6ff2730adf7cbb7"
   integrity sha1-HyuibwE8hfATP3o61v8nMK33y7c=
   dependencies:
     iconv-lite "~0.4.11"

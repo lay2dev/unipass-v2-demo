@@ -16,11 +16,11 @@ interface UnipassData {
   code: number;
 }
 export function getDataFromUrl(): void {
-  const url = window.location.href;
+  const url = new URL(window.location.href);
   console.log('getDataFromUrl--', url);
   let data = '';
   try {
-    data = url.split('unipass_ret=')[1];
+    data = url.searchParams.get('unipass_ret') as string;
   } catch (e) {
     console.log('getDataFromUrl-e', e);
     return;
@@ -53,6 +53,10 @@ export function getDataFromUrl(): void {
     }
     Notify.create(unipassData.info);
   }
+
+  url.searchParams.delete('unipass_ret');
+  history.replaceState('', '', url.href);
+  console.log('url.href', url.href);
 }
 
 export function getPublick(): string {

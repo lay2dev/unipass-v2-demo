@@ -129,7 +129,7 @@ import PWCore, {
   Address,
   AddressType,
   Amount,
-  IndexerCollector
+  IndexerCollector,
 } from '@lay2/pw-core';
 import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import UnipassProvider, { UnipassSign } from 'src/components/UnipassProvider';
@@ -139,6 +139,19 @@ import { createHash } from 'crypto';
 import { Logout, getData } from 'src/components/LocalData';
 import { nets, saveEnvData, getCkbEnv } from 'src/components/config';
 import { getDataFromUrl, getPublick } from 'src/components/utils';
+import { LocalStorage } from 'quasar';
+
+export interface PageState {
+  mode: string;
+  message: string;
+  signature: string;
+  pubkey: string;
+  toAddress: string;
+  toAmount: number;
+  txHash: string;
+  success: string;
+  url: string;
+}
 
 export default defineComponent({
   name: 'PageIndex',
@@ -149,6 +162,7 @@ export default defineComponent({
   },
   async created() {
     try {
+      this.restoreState();
       getDataFromUrl();
       const data = getData();
       if (data.sig) {
@@ -171,6 +185,7 @@ export default defineComponent({
   setup() {
     const urls = nets;
     let provider = ref<UnipassProvider>();
+
     const mode = ref('urlCallBack');
     const message = ref('');
     const signature = ref('');
@@ -179,6 +194,7 @@ export default defineComponent({
     const toAmount = ref(0);
     const txHash = ref('');
     const success = ref('');
+
     saveEnvData(urls[0].url);
     return {
       mode,
@@ -191,17 +207,48 @@ export default defineComponent({
       signature,
       pubkey,
       urls,
-      success
+      success,
     };
   },
 
   methods: {
+    saveState() {
+      const pageState: PageState = {
+        mode: this.mode,
+        message: this.message,
+        signature: this.signature,
+        pubkey: this.pubkey,
+        toAddress: this.toAddress,
+        toAmount: this.toAmount,
+        txHash: this.txHash,
+        success: this.success,
+        url: this.url,
+      };
+      LocalStorage.set('page_state', pageState);
+    },
+    restoreState() {
+      const pageState = LocalStorage.getItem('page_state') as PageState;
+      if (!pageState) return;
+
+      this.mode = pageState.mode;
+      this.message = pageState.message;
+      this.signature = pageState.signature;
+      this.pubkey = pageState.pubkey;
+      this.toAddress = pageState.toAddress;
+      this.toAmount = pageState.toAmount;
+      this.txHash = pageState.txHash;
+      this.url = pageState.url;
+
+      saveEnvData(this.url);
+      LocalStorage.remove('page_state');
+    },
     async login() {
       if (this.mode == 'urlCallBack') {
         const host = this.url;
         const success_url = window.location.origin;
         const fail_url = window.location.origin;
         window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
+        this.saveState();
       } else {
         const url = getCkbEnv();
         await new PWCore(url.NODE_URL).init(
@@ -256,6 +303,7 @@ export default defineComponent({
         const pubkey = getPublick();
         if (!pubkey) return;
         const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
+        this.saveState();
         console.log(_url);
         window.location.href = _url;
       } else {
@@ -276,13 +324,13 @@ export default defineComponent({
     logout() {
       Logout();
       void window.location.reload();
-    }
+    },
   },
   watch: {
     url(newVal: string) {
       console.log(newVal);
       saveEnvData(newVal);
-    }
-  }
+    },
+  },
 });
 </script>
