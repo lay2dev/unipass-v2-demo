@@ -197,12 +197,11 @@ export default defineComponent({
 
   methods: {
     async login() {
-      console.log(this.url, nets);
       if (this.mode == 'urlCallBack') {
         const host = this.url;
         const success_url = window.location.origin;
         const fail_url = window.location.origin;
-        // window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
+        window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
       } else {
         const url = getCkbEnv();
         await new PWCore(url.NODE_URL).init(
