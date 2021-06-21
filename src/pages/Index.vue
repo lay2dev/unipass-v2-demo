@@ -152,7 +152,7 @@ export default defineComponent({
       getDataFromUrl();
       const data = getData();
       if (data.sig) {
-        this.key = data.pubkey;
+        this.pubkey = data.pubkey;
         this.signature = `0x01${data.sig.replace('0x', '')}`;
       }
       if (data.address) {
