@@ -138,7 +138,7 @@ import UnipassSigner from 'src/components/UnipassSigner';
 import { createHash } from 'crypto';
 import { Logout, getData } from 'src/components/LocalData';
 import { nets, saveEnvData, getCkbEnv } from 'src/components/config';
-import { getDataFromUrl, getPublick, getSignData } from 'src/components/utils';
+import { getDataFromUrl, getPublick } from 'src/components/utils';
 
 export default defineComponent({
   name: 'PageIndex',
@@ -195,9 +195,9 @@ export default defineComponent({
   methods: {
     async login() {
       if (this.mode == 'urlCallBack') {
-        const host = 'http://localhost:3000';
-        const success_url = 'http://localhost:4000';
-        const fail_url = 'http://localhost:4000';
+        const host = this.url;
+        const success_url = window.location.origin;
+        const fail_url = window.location.origin;
         window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
       } else {
         const url = getCkbEnv();
@@ -247,9 +247,9 @@ export default defineComponent({
         .digest('hex')
         .toString();
       if (this.mode == 'urlCallBack') {
-        const host = 'http://localhost:3000';
-        const success_url = 'http://localhost:4000';
-        const fail_url = 'http://localhost:4000';
+        const host = this.url;
+        const success_url = window.location.origin;
+        const fail_url = window.location.origin;
         const pubkey = getPublick();
         if (!pubkey) return;
         const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
