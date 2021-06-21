@@ -126,12 +126,18 @@
 
 <script lang="ts">
 import PWCore, {
+  RPC,
+  Reader,
   Address,
   AddressType,
   Amount,
   IndexerCollector,
+  normalizers,
+  SerializeWitnessArgs,
+  WitnessArgs,
+  transformers,
 } from '@lay2/pw-core';
-import { defineComponent, onMounted, ref } from '@vue/composition-api';
+import { defineComponent, ref } from '@vue/composition-api';
 import UnipassProvider, { UnipassSign } from 'src/components/UnipassProvider';
 import UnipassBuilder from 'src/components/UnipassBuilder';
 import UnipassSigner from 'src/components/UnipassSigner';
@@ -141,7 +147,19 @@ import { nets, saveEnvData, getCkbEnv } from 'src/components/config';
 import { getDataFromUrl, getPublick } from 'src/components/utils';
 import { LocalStorage } from 'quasar';
 
+export enum ActionType {
+  Init,
+  Login,
+  SignMsg,
+  SendTx,
+}
+
 export interface PageState {
+  action: string;
+  data: PageData;
+  extraObj: string;
+}
+export interface PageData {
   mode: string;
   message: string;
   signature: string;
@@ -151,6 +169,10 @@ export interface PageState {
   txHash: string;
   success: string;
   url: string;
+}
+export interface SendTxState {
+  txObj: any;
+  messages: Message[];
 }
 
 export default defineComponent({
@@ -162,13 +184,12 @@ export default defineComponent({
   },
   async created() {
     try {
-      this.restoreState();
+      const pageState = this.restoreState();
+      let action = ActionType.Init;
+      if (!!pageState) action = pageState.action;
+
       getDataFromUrl();
       const data = getData();
-      if (data.sig) {
-        this.pubkey = data.pubkey;
-        this.signature = `0x01${data.sig.replace('0x', '')}`;
-      }
       if (data.address) {
         const url = getCkbEnv();
         await new PWCore(url.NODE_URL).init(
@@ -177,6 +198,22 @@ export default defineComponent({
           url.CHAIN_ID
         );
         this.provider = PWCore.provider as UnipassProvider;
+      }
+
+      switch (action) {
+        case ActionType.Init:
+          break;
+        case ActionType.Login:
+          break;
+        case ActionType.SignMsg:
+          if (data.sig) {
+            this.pubkey = data.pubkey;
+            this.signature = `0x01${data.sig.replace('0x', '')}`;
+          }
+          break;
+        case ActionType.SendTx:
+          await this.sendTxCallback(data.sig, pageState?.extraObj);
+          break;
       }
     } catch (e) {
       return;
@@ -212,35 +249,43 @@ export default defineComponent({
   },
 
   methods: {
-    saveState() {
+    saveState(action: ActionType, extraObj = '') {
       const pageState: PageState = {
-        mode: this.mode,
-        message: this.message,
-        signature: this.signature,
-        pubkey: this.pubkey,
-        toAddress: this.toAddress,
-        toAmount: this.toAmount,
-        txHash: this.txHash,
-        success: this.success,
-        url: this.url,
+        action,
+        extraObj,
+        data: {
+          mode: this.mode,
+          message: this.message,
+          signature: this.signature,
+          pubkey: this.pubkey,
+          toAddress: this.toAddress,
+          toAmount: this.toAmount,
+          txHash: this.txHash,
+          success: this.success,
+          url: this.url,
+        } as PageData,
       };
       LocalStorage.set('page_state', pageState);
     },
-    restoreState() {
+    restoreState(): PageState | undefined {
       const pageState = LocalStorage.getItem('page_state') as PageState;
-      if (!pageState) return;
+      if (!pageState) return undefined;
 
-      this.mode = pageState.mode;
-      this.message = pageState.message;
-      this.signature = pageState.signature;
-      this.pubkey = pageState.pubkey;
-      this.toAddress = pageState.toAddress;
-      this.toAmount = pageState.toAmount;
-      this.txHash = pageState.txHash;
-      this.url = pageState.url;
+      const pageData = pageState.data;
+
+      this.mode = pageData.mode;
+      this.message = pageData.message;
+      this.signature = pageData.signature;
+      this.pubkey = pageData.pubkey;
+      this.toAddress = pageData.toAddress;
+      this.toAmount = pageData.toAmount;
+      this.txHash = pageData.txHash;
+      this.url = pageData.url;
 
       saveEnvData(this.url);
       LocalStorage.remove('page_state');
+
+      return pageState;
     },
     async login() {
       if (this.mode == 'urlCallBack') {
@@ -248,7 +293,7 @@ export default defineComponent({
         const success_url = window.location.origin;
         const fail_url = window.location.origin;
         window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
-        this.saveState();
+        this.saveState(ActionType.Login);
       } else {
         const url = getCkbEnv();
         await new PWCore(url.NODE_URL).init(
@@ -280,14 +325,56 @@ export default defineComponent({
           new Amount(`${this.toAmount}`)
         );
         const signer = new UnipassSigner(this.provider);
-        const url = getCkbEnv();
-        this.txHash = await new PWCore(url.NODE_URL).sendTransaction(
-          builder,
-          signer
-        );
-        console.log('this.txHash', this.txHash);
+
+        const tx = await builder.build();
+        const messages = signer.toMessages(tx);
+
+        const host = this.url;
+        const success_url = window.location.origin;
+        const fail_url = window.location.origin;
+        const pubkey = getPublick();
+        if (!pubkey) return;
+        const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messages[0].message}/#sign`;
+
+        const txObj = transformers.TransformTransaction(tx);
+        this.saveState(ActionType.SendTx, JSON.stringify({ txObj, messages }));
+        console.log(_url);
+        window.location.href = _url;
       } catch (err) {
         console.error(err);
+      }
+    },
+    async sendTxCallback(sig: string, extraObj: string) {
+      try {
+        console.log('sendTxCallback sig', sig);
+        console.log('sendTxCallback extraObj', extraObj);
+        const witnessArgs: WitnessArgs = {
+          lock: '0x01' + sig.replace('0x', ''),
+          input_type: '',
+          output_type: '',
+        };
+
+        const witness = new Reader(
+          SerializeWitnessArgs(normalizers.NormalizeWitnessArgs(witnessArgs))
+        ).serializeJson();
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const { txObj, messages } = JSON.parse(extraObj) as SendTxState;
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        txObj.witnesses[0] = witness;
+
+        console.log('txObj', txObj);
+
+        const url = getCkbEnv();
+        console.log('url', url);
+        const rpc = new RPC(url.NODE_URL);
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        this.txHash = await rpc.send_transaction(txObj);
+        console.log('this.txHash', this.txHash);
+      } catch (err) {
+        console.error('send tx error', err);
       }
     },
     async sign() {
@@ -303,7 +390,7 @@ export default defineComponent({
         const pubkey = getPublick();
         if (!pubkey) return;
         const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
-        this.saveState();
+        this.saveState(ActionType.SignMsg);
         console.log(_url);
         window.location.href = _url;
       } else {
