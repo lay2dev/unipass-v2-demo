@@ -4,7 +4,6 @@
       <q-card-section class="row justify-around">
         <q-radio v-model="mode" val="webauthn" label="Webauthn" />
         <q-radio v-model="mode" val="subtle" label="Subtle" />
-        <q-radio v-model="mode" val="urlCallBack" label="UrlCallBack" />
         <div>
           <q-field> {{ url }}</q-field>
           <q-select
@@ -139,7 +138,7 @@ import PWCore, {
   Message,
 } from '@lay2/pw-core';
 import { defineComponent, ref } from '@vue/composition-api';
-import UnipassProvider, { UnipassSign } from 'src/components/UnipassProvider';
+import UnipassProvider from 'src/components/UnipassProvider';
 import UnipassBuilder from 'src/components/UnipassBuilder';
 import UnipassSigner from 'src/components/UnipassSigner';
 import { createHash } from 'crypto';
@@ -194,7 +193,7 @@ export default defineComponent({
       if (data.address) {
         const url = getCkbEnv();
         await new PWCore(url.NODE_URL).init(
-          new UnipassProvider(this.url),
+          new UnipassProvider(data.email, data.address),
           new IndexerCollector(url.INDEXER_URL),
           url.CHAIN_ID
         );
@@ -225,7 +224,7 @@ export default defineComponent({
     const urls = nets;
     let provider = ref<UnipassProvider>();
 
-    const mode = ref('urlCallBack');
+    const mode = ref('subtle');
     const message = ref('');
     const signature = ref('');
     const pubkey = ref('');
@@ -289,30 +288,15 @@ export default defineComponent({
 
       return pageState;
     },
-    async login() {
-      if (this.mode == 'urlCallBack') {
-        const host = this.url;
-        const success_url = window.location.origin;
-        const fail_url = window.location.origin;
-        window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
-        this.saveState(ActionType.Login);
-      } else {
-        const url = getCkbEnv();
-        await new PWCore(url.NODE_URL).init(
-          new UnipassProvider(this.url),
-          new IndexerCollector(url.INDEXER_URL),
-          url.CHAIN_ID
-        );
-        this.provider = PWCore.provider as UnipassProvider;
-      }
+    login() {
+      const host = this.url;
+      const success_url = window.location.origin;
+      const fail_url = window.location.origin;
+      window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
+      this.saveState(ActionType.Login);
     },
-    async recovery() {
-      this.provider = await new UnipassProvider(this.url).recover();
-      if (this.provider.recovery) {
-        this.success = '重签恢复数据成功';
-      } else {
-        this.success = '重签恢复数据失败，请联系unipass团队';
-      }
+    recovery() {
+      this.success = '重签功能失效';
     },
     async send() {
       try {
@@ -380,33 +364,21 @@ export default defineComponent({
         console.error('send tx error', err);
       }
     },
-    async sign() {
+    sign() {
       console.log('[sign] message: ', this.mode);
       const messageHash = createHash('SHA256')
         .update(this.message || '0x')
         .digest('hex')
         .toString();
-      if (this.mode == 'urlCallBack') {
-        const host = this.url;
-        const success_url = window.location.origin;
-        const fail_url = window.location.origin;
-        const pubkey = this.pubkey;
-        if (!pubkey) return;
-        const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
-        this.saveState(ActionType.SignMsg);
-        console.log(_url);
-        window.location.href = _url;
-      } else {
-        console.log('[sign] sig requested to ', this.url);
-        const data = await new UnipassProvider(this.url).sign(messageHash);
-        if (data.startsWith('0x')) {
-          this.signature = data;
-        } else {
-          const info = JSON.parse(data) as UnipassSign;
-          this.pubkey = info.pubkey;
-          this.signature = `0x01${info.sign.replace('0x', '')}`;
-        }
-      }
+      const host = this.url;
+      const success_url = window.location.origin;
+      const fail_url = window.location.origin;
+      const pubkey = getPublick();
+      if (!this.provider || !pubkey) return;
+      const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
+      this.saveState(ActionType.SignMsg);
+      console.log(_url);
+      window.location.href = _url;
     },
     goto(url: string) {
       window.location.href = url;
