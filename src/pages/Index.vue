@@ -334,7 +334,7 @@ export default defineComponent({
         const host = this.url;
         const success_url = window.location.origin;
         const fail_url = window.location.origin;
-        const pubkey = getPublick();
+        const pubkey = this.pubkey;
         if (!pubkey) return;
         const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messages[0].message}/#sign`;
 
@@ -390,7 +390,7 @@ export default defineComponent({
         const host = this.url;
         const success_url = window.location.origin;
         const fail_url = window.location.origin;
-        const pubkey = getPublick();
+        const pubkey = this.pubkey;
         if (!pubkey) return;
         const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
         this.saveState(ActionType.SignMsg);
