@@ -175,6 +175,18 @@ export interface SendTxState {
   messages: Message[];
 }
 
+function generateUnipassUrl(
+  host: string,
+  action: string,
+  params: { [key: string]: string }
+) {
+  const urlObj = new URL(`${host}/#${action.toLowerCase()}`);
+  for (const key of Object.keys(params)) {
+    urlObj.searchParams.set(key, params[key]);
+  }
+  return urlObj.href;
+}
+
 export default defineComponent({
   name: 'PageIndex',
   beforeRouteEnter(to, from, next) {
@@ -292,7 +304,11 @@ export default defineComponent({
       const host = this.url;
       const success_url = window.location.origin;
       const fail_url = window.location.origin;
-      window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
+      // window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
+      window.location.href = generateUnipassUrl(host, 'login', {
+        success_url,
+        fail_url,
+      });
       this.saveState(ActionType.Login);
     },
     recovery() {
@@ -320,7 +336,13 @@ export default defineComponent({
         const fail_url = window.location.origin;
         const pubkey = this.pubkey;
         if (!pubkey) return;
-        const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messages[0].message}/#sign`;
+        // const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messages[0].message}/#sign`;
+        const _url = generateUnipassUrl(host, 'sign', {
+          success_url,
+          fail_url,
+          pubkey,
+          message: messages[0].message,
+        });
 
         const txObj = transformers.TransformTransaction(tx);
         this.saveState(ActionType.SendTx, JSON.stringify({ txObj, messages }));
@@ -375,7 +397,13 @@ export default defineComponent({
       const fail_url = window.location.origin;
       const pubkey = getPublick();
       if (!this.provider || !pubkey) return;
-      const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
+      // const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
+      const _url = generateUnipassUrl(host, 'sign', {
+        success_url,
+        fail_url,
+        pubkey,
+        message: messageHash,
+      });
       this.saveState(ActionType.SignMsg);
       console.log(_url);
       window.location.href = _url;
