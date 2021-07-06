@@ -135,7 +135,7 @@ import PWCore, {
   SerializeWitnessArgs,
   WitnessArgs,
   transformers,
-  Message,
+  Message
 } from '@lay2/pw-core';
 import { defineComponent, ref } from '@vue/composition-api';
 import UnipassProvider from 'src/components/UnipassProvider';
@@ -151,7 +151,7 @@ export enum ActionType {
   Init,
   Login,
   SignMsg,
-  SendTx,
+  SendTx
 }
 
 export interface PageState {
@@ -257,7 +257,7 @@ export default defineComponent({
       signature,
       pubkey,
       urls,
-      success,
+      success
     };
   },
 
@@ -275,8 +275,8 @@ export default defineComponent({
           toAmount: this.toAmount,
           txHash: this.txHash,
           success: this.success,
-          url: this.url,
-        } as PageData,
+          url: this.url
+        } as PageData
       };
       LocalStorage.set('page_state', pageState);
     },
@@ -307,7 +307,7 @@ export default defineComponent({
       // window.location.href = `${host}?success_url=${success_url}&fail_url=${fail_url}/#login`;
       window.location.href = generateUnipassUrl(host, 'login', {
         success_url,
-        fail_url,
+        fail_url
       });
       this.saveState(ActionType.Login);
     },
@@ -326,22 +326,26 @@ export default defineComponent({
           new Address(this.toAddress, AddressType.ckb),
           new Amount(`${this.toAmount}`)
         );
+        console.log(builder);
         const signer = new UnipassSigner(this.provider);
 
         const tx = await builder.build();
+        console.log('tx', tx);
         const messages = signer.toMessages(tx);
+        console.log('messages', messages);
 
         const host = this.url;
         const success_url = window.location.origin;
         const fail_url = window.location.origin;
         const pubkey = this.pubkey;
+        console.log('pubkey', pubkey);
         if (!pubkey) return;
         // const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messages[0].message}/#sign`;
         const _url = generateUnipassUrl(host, 'sign', {
           success_url,
           fail_url,
           pubkey,
-          message: messages[0].message,
+          message: messages[0].message
         });
 
         const txObj = transformers.TransformTransaction(tx);
@@ -360,7 +364,7 @@ export default defineComponent({
         const witnessArgs: WitnessArgs = {
           lock: '0x01' + sig.replace('0x', ''),
           input_type: '',
-          output_type: '',
+          output_type: ''
         };
 
         const witness = new Reader(
@@ -402,7 +406,7 @@ export default defineComponent({
         success_url,
         fail_url,
         pubkey,
-        message: messageHash,
+        message: messageHash
       });
       this.saveState(ActionType.SignMsg);
       console.log(_url);
@@ -414,13 +418,13 @@ export default defineComponent({
     logout() {
       Logout();
       void window.location.reload();
-    },
+    }
   },
   watch: {
     url(newVal: string) {
       console.log(newVal);
       saveEnvData(newVal);
-    },
-  },
+    }
+  }
 });
 </script>

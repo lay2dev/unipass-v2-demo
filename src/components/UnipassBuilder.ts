@@ -8,7 +8,7 @@ import PWCore, {
   Builder,
   Collector
 } from '@lay2/pw-core';
-import { cellDeps } from './config';
+import { getCellDeps } from 'src/compositions/api';
 
 const UnipassWitnessArgs = {
   lock: '0x' + '0'.repeat(2082),
@@ -41,7 +41,7 @@ export default class UnipassBuilder extends Builder {
       inputSum = inputSum.add(cell.capacity);
       if (inputSum.gt(neededAmount)) break;
     }
-
+    console.log(inputSum);
     if (inputSum.lt(neededAmount)) {
       throw new Error(
         `input capacity not enough, need ${neededAmount.toString(
@@ -49,20 +49,19 @@ export default class UnipassBuilder extends Builder {
         )}, got ${inputSum.toString(AmountUnit.ckb)}`
       );
     }
+    console.log(inputSum.lt(neededAmount));
     const changeCell = new Cell(
       inputSum.sub(outputCell.capacity),
       PWCore.provider.address.toLockScript()
     );
-    const cellsDeps = cellDeps();
+    const cellsDeps = await getCellDeps();
+    console.log('cellsDeps', cellsDeps);
     const tx = new Transaction(
-      new RawTransaction(
-        inputCells,
-        [outputCell, changeCell],
-        [cellsDeps.rsaDep, cellsDeps.acpDep, cellsDeps.unipassDep]
-      ),
+      new RawTransaction(inputCells, [outputCell, changeCell], cellsDeps),
       [UnipassWitnessArgs]
     );
     this.fee = Builder.calcFee(tx, this.feeRate);
+    console.log('fee', this.fee);
     if (changeCell.capacity.gte(Builder.MIN_CHANGE.add(this.fee))) {
       changeCell.capacity = changeCell.capacity.sub(this.fee);
       tx.raw.outputs.pop();
