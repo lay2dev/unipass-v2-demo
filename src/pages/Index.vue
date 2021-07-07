@@ -216,6 +216,7 @@ export default defineComponent({
         case ActionType.Init:
           break;
         case ActionType.Login:
+          this.pubkey = data.pubkey;
           break;
         case ActionType.SignMsg:
           if (data.sig) {
