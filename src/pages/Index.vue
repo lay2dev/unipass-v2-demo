@@ -1,5 +1,11 @@
 <template>
   <q-page class="flex-center justify-evenly">
+    <create-select
+      :show.sync="showSelect"
+      @select="bindSelect"
+      :address="address"
+      class="fullscreen bg-white z-top"
+    />
     <q-card class="my-card">
       <q-card-section class="row justify-around">
         <q-radio v-model="mode" val="webauthn" label="Webauthn" />
@@ -24,6 +30,7 @@
       </q-card-section>
     </q-card>
     <q-card class="my-card">
+      <!-- info -->
       <q-card-section class="q-gutter-sm">
         <div class="row"><b>EMAIL:</b> {{ provider && provider.email }}</div>
         <div class="row" style="word-break: break-all;">
@@ -47,6 +54,7 @@
         />
       </q-card-section>
       <q-separator spaced />
+      <!-- transfer -->
       <q-card-section class="q-gutter-sm">
         <div class="row">
           <q-input
@@ -80,6 +88,61 @@
         </div>
       </q-card-section>
       <q-separator spaced />
+
+      <!-- transfer NFT -->
+      <q-card-section>
+        <div>
+          <div class="full-width">
+            <q-btn class="full-width" @click="onpenNFTList">选择NFT </q-btn>
+          </div>
+          <div>
+            <div class="nft-list">
+              <template v-for="(e, i) in nfts">
+                <div v-if="e.checked.length" :key="i" class="nft">
+                  <div class="nft-info">
+                    <el-image
+                      class="nft-image"
+                      :src="e.renderer"
+                      alt="bg_image_url"
+                      fit="cover"
+                      lazy
+                    />
+                    <div class="info">
+                      <div class="name">{{ e.name }}</div>
+                      <div class="user">
+                        <div class="user-name">{{ e.issuerName }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="nft-box">
+                    <el-checkbox-group v-model="e.checked">
+                      <template v-for="nft in e.children">
+                        <el-checkbox
+                          v-if="e.checked.includes(nft.tokenId)"
+                          :key="nft.tokenId"
+                          class="nft-one"
+                          :label="nft.tokenId"
+                          >#{{ nft.tokenId }}</el-checkbox
+                        >
+                      </template>
+                    </el-checkbox-group>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+          <q-btn
+            class="full-width"
+            label="send to transfer nft"
+            color="primary"
+            icon="send"
+            @click="postTransferNFT"
+          />
+        </div>
+      </q-card-section>
+      <q-separator spaced />
+
+      <!-- sign -->
       <q-card-section class="q-gutter-sm">
         <div class="row">
           <q-input
@@ -146,12 +209,19 @@ import { Logout, getData } from 'src/components/LocalData';
 import { nets, saveEnvData, getCkbEnv } from 'src/components/config';
 import { getDataFromUrl, getPublick } from 'src/components/utils';
 import { LocalStorage } from 'quasar';
+import createSelect from 'src/components/create-select.vue';
+import {
+  getNFTTransferSignMessage,
+  SignTxMessage,
+  getNFTransferSignCallback
+} from 'src/compositions/transfer';
 
 export enum ActionType {
   Init,
   Login,
   SignMsg,
-  SendTx
+  SendTx,
+  SendTrasnferTx
 }
 
 export interface PageState {
@@ -188,6 +258,7 @@ function generateUnipassUrl(
 }
 
 export default defineComponent({
+  components: { createSelect },
   name: 'PageIndex',
   beforeRouteEnter(to, from, next) {
     console.log('from', from.path);
@@ -203,6 +274,7 @@ export default defineComponent({
       getDataFromUrl();
       const data = getData();
       if (data.address) {
+        this.address = data.address;
         const url = getCkbEnv();
         await new PWCore(url.NODE_URL).init(
           new UnipassProvider(data.email, data.address),
@@ -217,6 +289,7 @@ export default defineComponent({
           break;
         case ActionType.Login:
           this.pubkey = data.pubkey;
+
           break;
         case ActionType.SignMsg:
           if (data.sig) {
@@ -227,6 +300,20 @@ export default defineComponent({
         case ActionType.SendTx:
           if (data.sig)
             await this.sendTxCallback(data.sig, pageState?.extraObj);
+          break;
+        //SendTrasnferTx
+        case ActionType.SendTrasnferTx:
+          if (data.sig) {
+            const url = getCkbEnv();
+            const extra = pageState?.extraObj as string;
+            const txhash = await getNFTransferSignCallback(
+              data.sig,
+              extra,
+              url.NODE_URL
+            );
+            this.txHash = txhash;
+          }
+
           break;
       }
     } catch (e) {
@@ -247,6 +334,8 @@ export default defineComponent({
     const success = ref('');
 
     saveEnvData(urls[0].url);
+    const nfts: any[] = [];
+    const nftChecked: any[] = [];
     return {
       mode,
       url: urls[0].url,
@@ -258,11 +347,19 @@ export default defineComponent({
       signature,
       pubkey,
       urls,
-      success
+      success,
+      nfts,
+      nftChecked,
+      address: ref(''),
+      showSelect: ref(false)
     };
   },
 
   methods: {
+    bindSelect(nfts: any[], checked: any[]) {
+      this.nfts = nfts;
+      this.nftChecked = checked;
+    },
     saveState(action: ActionType, extraObj = '') {
       const pageState: PageState = {
         action,
@@ -357,6 +454,41 @@ export default defineComponent({
         console.error(err);
       }
     },
+    onpenNFTList() {
+      console.log('onpenNFTList');
+      const localData = getData();
+      console.log('onpenNFTList-', localData);
+      this.address = localData.address;
+      console.log('onpenNFTList--', this.address);
+      this.showSelect = true;
+    },
+    async postTransferNFT() {
+      console.log('postTransferNFT');
+      if (!this.toAddress) return;
+      if (this.nftChecked.length === 0) {
+        this.showSelect = true;
+        return;
+      }
+      const data = await getNFTTransferSignMessage(
+        this.toAddress,
+        this.nftChecked
+      );
+      if (!data) return;
+      const localData = getData();
+      const pubkey = localData.pubkey;
+      const host = this.url;
+      const success_url = window.location.origin;
+      const fail_url = window.location.origin;
+      const _url = generateUnipassUrl(host, 'sign', {
+        success_url,
+        fail_url,
+        pubkey,
+        message: (data as SignTxMessage).messages
+      });
+      this.saveState(ActionType.SendTrasnferTx, (data as SignTxMessage).data);
+      console.log(_url);
+      window.location.href = _url;
+    },
     async sendTxCallback(sig: string, extraObj: string | undefined) {
       if (!extraObj) return;
       try {
@@ -429,3 +561,86 @@ export default defineComponent({
   }
 });
 </script>
+
+<style lang="stylus">
+.nft-list {
+  width: 100%;
+  border: 0;
+  .nft {
+    .nft-info {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 16px 0;
+      cursor: pointer;
+      margin-right: 6px;
+
+      .nft-image {
+        background: #eee;
+        height: 50px;
+        width: 50px;
+        flex-shrink: 0;
+        box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.24);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .info {
+        margin-top: 4px;
+        margin-left: 10px;
+
+        .name {
+          color: rgba(16, 16, 16, 100);
+          font-size: 16px;
+          line-height: 16px;
+          font-weight: bold;
+        }
+
+        .user {
+          margin-top: 5px;
+          display: flex;
+          align-items: center;
+
+          .user-name {
+            font-size: 14px;
+            color: #aaa;
+          }
+        }
+      }
+    }
+
+    .nft-box {
+      display: flex;
+      flex-wrap: wrap;
+      border-bottom: 1px solid #f4f4f4;
+
+      .nft-one {
+        margin-bottom: 14px;
+        border-radius: 5px;
+        background: #e6e6e6;
+        margin-right: 24px;
+        width: 50px;
+        height: 26px;
+        line-height: 26px;
+        text-align: center;
+
+        .el-checkbox__input {
+          display: none;
+        }
+
+        .el-checkbox__label {
+          padding-left: 0;
+        }
+      }
+
+      .nft-one.is-checked {
+        background: #f35543;
+
+        .el-checkbox__input.is-checked + .el-checkbox__label {
+          color: #fff;
+        }
+      }
+    }
+  }
+}
+</style>

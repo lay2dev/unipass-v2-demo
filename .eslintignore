@@ -6,3 +6,5 @@
 /node_modules
 /src-ssr
 .eslintrc.js
+/src/components/*.vue
+/src/compositions/lib.ts
