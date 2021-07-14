@@ -40,11 +40,7 @@ export class TransferTicketBuilder extends Builder {
       const stateBin = parseInt(`0x${data.slice(20, 22)}`, 16).toString(2);
       let state = data.slice(20, 22);
       if (this.state === '02') {
-        if (state === '00') {
-          state = addBinary(stateBin, '10');
-        } else {
-          state = addBinary(stateBin, '1');
-        }
+        state = addBinary(stateBin, '10');
       } else {
         if (state === '00') {
           state = addBinary(stateBin, '1');
