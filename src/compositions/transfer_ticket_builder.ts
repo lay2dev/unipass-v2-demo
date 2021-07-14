@@ -42,6 +42,8 @@ export class TransferTicketBuilder extends Builder {
       if (this.state === '02') {
         if (state === '00') {
           state = addBinary(stateBin, '10');
+        } else {
+          state = addBinary(stateBin, '1');
         }
       } else {
         if (state === '00') {
