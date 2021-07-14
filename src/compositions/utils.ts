@@ -34,7 +34,3 @@ export default {
     }
   }
 };
-/**
- * get ckb address by pubkey
- * @param pubkey
- */

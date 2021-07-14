@@ -13,7 +13,6 @@ import PWCore, {
 import { getData } from 'src/components/LocalData';
 import { getCellDeps, getCellsByOutpoints } from './api';
 import { TransferNFTProvider } from './transfer_nft-provider';
-import { TransferNFTBuilder } from './transfer_nft_builder';
 import { TransferTicketBuilder } from './transfer_ticket_builder';
 import { UnipassIndexerCollector } from './unipass-indexer-collector';
 import { UnipassSigner } from './unipass-signer';
