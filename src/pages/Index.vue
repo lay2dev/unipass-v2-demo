@@ -131,15 +131,41 @@
               </template>
             </div>
           </div>
-          <q-btn
-            class="full-width"
-            label="send to transfer nft"
-            color="primary"
-            icon="send"
-            @click="postTransferNFT"
-          />
         </div>
       </q-card-section>
+      <q-separator spaced />
+
+      <!-- transfer ticket -->
+      <q-card-section
+        class="q-gutter-sm full-width row wrap justify-around items-center content-start"
+      >
+        <q-btn
+          label="transfer nft"
+          color="primary"
+          no-caps
+          class="col-3"
+          @click="postTransferNFT"
+        />
+        <!-- check ticket -->
+        <q-btn
+          class="col-3"
+          label="check ticket"
+          color="primary"
+          no-caps
+          @click="checkTicke"
+        />
+        <!-- lock ticket -->
+        <q-btn
+          class="col-3"
+          label="lock ticket"
+          color="primary"
+          no-caps
+          @click="lockTicke"
+        />
+      </q-card-section>
+      <q-separator spaced />
+
+      <q-card-section class="q-gutter-sm"> </q-card-section>
       <q-separator spaced />
 
       <!-- sign -->
@@ -215,13 +241,19 @@ import {
   SignTxMessage,
   getNFTransferSignCallback
 } from 'src/compositions/transfer';
+//
+import {
+  getTicketTransferSignMessage,
+  getTicketTransferSignCallback
+} from 'src/compositions/transfer-ticket';
 
 export enum ActionType {
   Init,
   Login,
   SignMsg,
   SendTx,
-  SendTrasnferTx
+  SendTrasnferTx,
+  CheckTickeTx
 }
 
 export interface PageState {
@@ -307,6 +339,19 @@ export default defineComponent({
             const url = getCkbEnv();
             const extra = pageState?.extraObj as string;
             const txhash = await getNFTransferSignCallback(
+              data.sig,
+              extra,
+              url.NODE_URL
+            );
+            this.txHash = txhash;
+          }
+
+          break;
+        case ActionType.CheckTickeTx:
+          if (data.sig) {
+            const url = getCkbEnv();
+            const extra = pageState?.extraObj as string;
+            const txhash = await getTicketTransferSignCallback(
               data.sig,
               extra,
               url.NODE_URL
@@ -548,6 +593,64 @@ export default defineComponent({
     goto(url: string) {
       window.location.href = url;
     },
+
+    async checkTicke() {
+      console.log('checkTicke');
+      const account = getData();
+      if (!account.address) return;
+      this.address = account.address;
+      console.log('checkTicke-address', account.address);
+      if (this.nftChecked.length === 0) {
+        this.showSelect = true;
+        return;
+      }
+      const data = await getTicketTransferSignMessage(
+        account.address,
+        this.nftChecked
+      );
+      if (!data) return;
+      const pubkey = account.pubkey;
+      const host = this.url;
+      const success_url = window.location.origin;
+      const fail_url = window.location.origin;
+      const _url = generateUnipassUrl(host, 'sign', {
+        success_url,
+        fail_url,
+        pubkey,
+        message: (data as SignTxMessage).messages
+      });
+      this.saveState(ActionType.CheckTickeTx, (data as SignTxMessage).data);
+      window.location.href = _url;
+    },
+    async lockTicke() {
+      const account = getData();
+      if (!account.address) return;
+      this.address = account.address;
+      console.log('checkTicke-address', account.address);
+      if (this.nftChecked.length === 0) {
+        this.showSelect = true;
+        return;
+      }
+      const data = await getTicketTransferSignMessage(
+        account.address,
+        this.nftChecked,
+        '10'
+      );
+      if (!data) return;
+      const pubkey = account.pubkey;
+      const host = this.url;
+      const success_url = window.location.origin;
+      const fail_url = window.location.origin;
+      const _url = generateUnipassUrl(host, 'sign', {
+        success_url,
+        fail_url,
+        pubkey,
+        message: (data as SignTxMessage).messages
+      });
+      this.saveState(ActionType.CheckTickeTx, (data as SignTxMessage).data);
+      window.location.href = _url;
+    },
+
     logout() {
       Logout();
       void window.location.reload();
