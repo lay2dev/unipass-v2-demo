@@ -60,14 +60,11 @@
 </template>
 <script>
 import { getNFTData } from 'src/compositions/api';
+import { getData } from 'src/components/LocalData';
 export default {
   props: {
     show: {
       type: Boolean,
-      default: false
-    },
-    address: {
-      type: String,
       default: false
     }
   },
@@ -89,7 +86,6 @@ export default {
     };
   },
   mounted() {
-    console.log('this.address', this.address);
     this.init();
   },
 
@@ -140,9 +136,11 @@ export default {
     },
     async init() {
       // first page
-      if (!this.address) return;
+      const data = getData();
+      console.log(data);
+      if (!data.address) return;
       this.loading = true;
-      const res = await getNFTData(this.address, 0, 100);
+      const res = await getNFTData(data.address, 0, 100);
       this.loading = false;
       if (Array.isArray(res)) {
         this.nftList = this.initList(res);

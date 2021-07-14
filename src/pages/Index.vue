@@ -3,7 +3,6 @@
     <create-select
       :show.sync="showSelect"
       @select="bindSelect"
-      :address="address"
       class="fullscreen bg-white z-top"
     />
     <q-card class="my-card">
@@ -161,6 +160,12 @@
           color="primary"
           no-caps
           @click="lockTicke"
+        />
+        <q-btn
+          class="col-12 q-my-lg"
+          label="resetState"
+          no-caps
+          @click="resetState"
         />
       </q-card-section>
       <q-separator spaced />
@@ -634,7 +639,35 @@ export default defineComponent({
       const data = await getTicketTransferSignMessage(
         account.address,
         this.nftChecked,
-        '10'
+        '02'
+      );
+      if (!data) return;
+      const pubkey = account.pubkey;
+      const host = this.url;
+      const success_url = window.location.origin;
+      const fail_url = window.location.origin;
+      const _url = generateUnipassUrl(host, 'sign', {
+        success_url,
+        fail_url,
+        pubkey,
+        message: (data as SignTxMessage).messages
+      });
+      this.saveState(ActionType.CheckTickeTx, (data as SignTxMessage).data);
+      window.location.href = _url;
+    },
+    async resetState() {
+      const account = getData();
+      if (!account.address) return;
+      this.address = account.address;
+      console.log('resetState-address', account.address);
+      if (this.nftChecked.length === 0) {
+        this.showSelect = true;
+        return;
+      }
+      const data = await getTicketTransferSignMessage(
+        account.address,
+        this.nftChecked,
+        '00'
       );
       if (!data) return;
       const pubkey = account.pubkey;

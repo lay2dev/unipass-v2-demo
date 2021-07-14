@@ -16,14 +16,14 @@ export const nets = [
   //   name: '本地',
   //   url: 'http://localhost:3000/'
   // },
-  {
-    name: '测试',
-    url: 'https://unipass-me-git-dev-lay2.vercel.app/'
-  },
-  {
-    name: '开发-aggron',
-    url: 'https://dev.unipass.me'
-  },
+  // {
+  //   name: '测试',
+  //   url: 'https://unipass-me-git-dev-lay2.vercel.app/'
+  // },
+  // {
+  //   name: '开发-aggron',
+  //   url: 'https://dev.unipass.me'
+  // },
   {
     name: '预览-aggron',
     url: 'https://t.rc.unipass.me'

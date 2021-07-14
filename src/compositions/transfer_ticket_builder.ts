@@ -42,6 +42,7 @@ export class TransferTicketBuilder extends Builder {
       outputCell.lock = this.toAddress.toLockScript();
       outputCell.setHexData(outData);
       outputCells.push(outputCell);
+      console.log(cell.getHexData());
       console.log(outputCell.getHexData());
     }
 
