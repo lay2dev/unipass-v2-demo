@@ -2,6 +2,7 @@ import PWCore, {
   Address,
   AddressType,
   BuilderOption,
+  Cell,
   Message,
   normalizers,
   OutPoint,
@@ -10,8 +11,8 @@ import PWCore, {
   transformers,
   WitnessArgs
 } from '@lay2/pw-core';
+import { getCellDeps, getRpc } from 'src/components/config';
 import { getData } from 'src/components/LocalData';
-import { getCellDeps, getCellsByOutpoints } from './api';
 import { TransferNFTProvider } from './transfer_nft-provider';
 import { TransferNFTBuilder } from './transfer_nft_builder';
 import { UnipassIndexerCollector } from './unipass-indexer-collector';
@@ -70,7 +71,10 @@ export async function getNFTTransferSignMessage(
   console.log('[getNFTTransferSignMessage-fromAddress]', fromAddress);
   console.log('[getNFTTransferSignMessage-toAddress]', toAddress);
 
-  const cells = await getCellsByOutpoints(outpoints);
+  const rpc = getRpc();
+  const cells = await Promise.all(
+    outpoints.map(x => Cell.loadFromBlockchain(rpc, x))
+  );
   console.log('[cells]', cells);
   const lockLen = (1 + (8 + 256 * 2) * 2) * 2;
   const builderOption: BuilderOption = {
@@ -81,7 +85,7 @@ export async function getNFTTransferSignMessage(
     },
     collector
   };
-  const cellDeps = await getCellDeps();
+  const cellDeps = getCellDeps();
   const builder = new TransferNFTBuilder(
     toAddress,
     cells,

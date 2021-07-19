@@ -2,6 +2,7 @@ import PWCore, {
   Address,
   AddressType,
   BuilderOption,
+  Cell,
   Message,
   normalizers,
   OutPoint,
@@ -10,8 +11,8 @@ import PWCore, {
   transformers,
   WitnessArgs
 } from '@lay2/pw-core';
+import { getCellDeps, getRpc } from 'src/components/config';
 import { getData } from 'src/components/LocalData';
-import { getCellDeps, getCellsByOutpoints } from './api';
 import { TransferNFTProvider } from './transfer_nft-provider';
 import { TransferTicketBuilder } from './transfer_ticket_builder';
 import { UnipassIndexerCollector } from './unipass-indexer-collector';
@@ -66,7 +67,12 @@ export async function getTicketTransferSignMessage(
   );
   const toAddress = new Address(address, AddressType.ckb);
 
-  const cells = await getCellsByOutpoints(outpoints);
+  // const cells = await getCellsByOutpoints(outpoints);
+  const rpc = getRpc();
+  const cells = await Promise.all(
+    outpoints.map(x => Cell.loadFromBlockchain(rpc, x))
+  );
+
   const lockLen = (1 + (8 + 256 * 2) * 2) * 2;
   const builderOption: BuilderOption = {
     witnessArgs: {
@@ -76,7 +82,7 @@ export async function getTicketTransferSignMessage(
     },
     collector
   };
-  const cellDeps = await getCellDeps();
+  const cellDeps = getCellDeps();
   const builder = new TransferTicketBuilder(
     toAddress,
     cells,
