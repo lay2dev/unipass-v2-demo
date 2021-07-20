@@ -15,13 +15,15 @@ export const nets = [
   //   name: '测试',
   //   url: 'https://unipass-me-git-dev-lay2.vercel.app/'
   // },
-  // {
-  //   name: '开发-aggron',
-  //   url: 'https://dev.unipass.me'
-  // },
+  {
+    name: '开发-aggron',
+    url: 'https://id.unipass.vip',
+    model: 1
+  },
   {
     name: '预览-aggron',
-    url: 'https://t.rc.unipass.me'
+    url: 'https://t.rc.unipass.me',
+    model: 0
   },
   {
     name: '预览-lina',
