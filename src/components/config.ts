@@ -64,20 +64,13 @@ const AggronCellDeps = [
   new CellDep(
     DepType.code,
     new OutPoint(
-      '0xbd262c87a84c08ea3bc141700cf55c1a285009de0e22c247a8d9597b4fc491e6',
+      '0x82e429d6e078bdf626ee10325e366340f4decb54a2565627419450d2232b9045',
       '0x2'
     )
   )
 ];
 
 const LinaCellDeps = [
-  new CellDep(
-    DepType.code,
-    new OutPoint(
-      '0xd521f52a7f4f4f00a25f0f6924c439844574d77d228113077ee0c84dc60ad11d',
-      '0x2'
-    )
-  ),
   new CellDep(
     DepType.code,
     new OutPoint(
@@ -97,6 +90,13 @@ const LinaCellDeps = [
     new OutPoint(
       '0x1196caaf9e45f1959ea3583f92914ee8306d42e27152f7068f9eeb52ac23eeae',
       '0x0'
+    )
+  ),
+  new CellDep(
+    DepType.code,
+    new OutPoint(
+      '0xf5edd047b3dbd676c9aa1e5a77ff32e3661d154c306e23bb0c13f8da9133f145',
+      '0x2'
     )
   )
 ];
