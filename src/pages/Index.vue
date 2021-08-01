@@ -29,6 +29,17 @@
       </q-card-section>
     </q-card>
     <q-card class="my-card">
+      <!-- home -->
+      <q-card-section class="q-gutter-sm">
+        <q-btn
+          class="full-width"
+          color="info"
+          icon="home"
+          label="Go Home"
+          @click="goHome"
+        />
+      </q-card-section>
+
       <!-- info -->
       <q-card-section class="q-gutter-sm">
         <div class="row"><b>EMAIL:</b> {{ provider && provider.email }}</div>
@@ -190,6 +201,7 @@
           <b>SIGNATURE:</b> {{ signature }}
         </div>
       </q-card-section>
+
       <q-card-section>
         <q-btn
           class="full-width"
@@ -404,6 +416,9 @@ export default defineComponent({
     bindSelect(nfts: any[], checked: any[]) {
       this.nfts = nfts;
       this.nftChecked = checked;
+    },
+    goHome() {
+      window.location.href = this.url;
     },
     saveState(action: ActionType, extraObj = '') {
       const pageState: PageState = {
