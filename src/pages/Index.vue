@@ -276,17 +276,6 @@ export interface SendTxState {
   messages: Message[];
 }
 
-function generateUnipassUrl(
-  host: string,
-  action: string,
-  params: { [key: string]: string }
-) {
-  const urlObj = new URL(`${host}/#${action.toLowerCase()}`);
-  for (const key of Object.keys(params)) {
-    urlObj.searchParams.set(key, params[key]);
-  }
-  return urlObj.href;
-}
 function generateUnipassNewUrl(
   host: string,
   action: string,
@@ -457,17 +446,9 @@ export default defineComponent({
     login() {
       const host = this.url;
       const success_url = window.location.origin;
-      if (this.url == 'https://id.unipass.vip') {
-        window.location.href = generateUnipassNewUrl(host, 'login', {
-          success_url
-        });
-      } else {
-        const fail_url = window.location.origin;
-        window.location.href = generateUnipassUrl(host, 'login', {
-          success_url,
-          fail_url
-        });
-      }
+      window.location.href = generateUnipassNewUrl(host, 'login', {
+        success_url
+      });
       this.saveState(ActionType.Login);
     },
     recovery() {
@@ -501,23 +482,12 @@ export default defineComponent({
         if (!pubkey) return;
         // const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messages[0].message}/#sign`;
         let _url = '';
-        if (this.url == 'https://id.unipass.vip') {
-          _url = generateUnipassNewUrl(host, 'sign', {
-            success_url,
-            fail_url,
-            pubkey,
-            message: messages[0].message
-          });
-        } else {
-          const fail_url = window.location.origin;
-          _url = generateUnipassUrl(host, 'sign', {
-            success_url,
-            fail_url,
-            pubkey,
-            message: messages[0].message
-          });
-        }
-
+        _url = generateUnipassNewUrl(host, 'sign', {
+          success_url,
+          fail_url,
+          pubkey,
+          message: messages[0].message
+        });
         const txObj = transformers.TransformTransaction(tx);
         this.saveState(ActionType.SendTx, JSON.stringify({ txObj, messages }));
         console.log(_url);
@@ -552,21 +522,11 @@ export default defineComponent({
       const success_url = window.location.origin;
       let _url = '';
 
-      if (this.url == 'https://id.unipass.vip') {
-        _url = generateUnipassNewUrl(host, 'sign', {
-          success_url,
-          pubkey,
-          message: (data as SignTxMessage).messages
-        });
-      } else {
-        const fail_url = window.location.origin;
-        _url = generateUnipassUrl(host, 'sign', {
-          success_url,
-          fail_url,
-          pubkey,
-          message: (data as SignTxMessage).messages
-        });
-      }
+      _url = generateUnipassNewUrl(host, 'sign', {
+        success_url,
+        pubkey,
+        message: (data as SignTxMessage).messages
+      });
       this.saveState(ActionType.SendTrasnferTx, (data as SignTxMessage).data);
       console.log(_url);
       window.location.href = _url;
@@ -619,21 +579,11 @@ export default defineComponent({
       // const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
       let _url = '';
 
-      if (this.url == 'https://id.unipass.vip') {
-        _url = generateUnipassNewUrl(host, 'sign', {
-          success_url,
-          pubkey,
-          message: messageHash
-        });
-      } else {
-        const fail_url = window.location.origin;
-        _url = generateUnipassUrl(host, 'sign', {
-          success_url,
-          fail_url,
-          pubkey,
-          message: messageHash
-        });
-      }
+      _url = generateUnipassNewUrl(host, 'sign', {
+        success_url,
+        pubkey,
+        message: messageHash
+      });
       this.saveState(ActionType.SignMsg);
       console.log(_url);
       window.location.href = _url;
@@ -661,22 +611,11 @@ export default defineComponent({
       const success_url = window.location.origin;
       let _url = '';
 
-      if (this.url == 'https://id.unipass.vip') {
-        _url = generateUnipassNewUrl(host, 'sign', {
-          success_url,
-          pubkey,
-          message: (data as SignTxMessage).messages
-        });
-      } else {
-        const fail_url = window.location.origin;
-        _url = generateUnipassUrl(host, 'sign', {
-          success_url,
-          fail_url,
-          pubkey,
-          message: (data as SignTxMessage).messages
-        });
-      }
-
+      _url = generateUnipassNewUrl(host, 'sign', {
+        success_url,
+        pubkey,
+        message: (data as SignTxMessage).messages
+      });
       this.saveState(ActionType.CheckTickeTx, (data as SignTxMessage).data);
       window.location.href = _url;
     },
@@ -698,21 +637,11 @@ export default defineComponent({
       const host = this.url;
       const success_url = window.location.origin;
       let _url = '';
-      if (this.url == 'https://id.unipass.vip') {
-        _url = generateUnipassNewUrl(host, 'sign', {
-          success_url,
-          pubkey,
-          message: (data as SignTxMessage).messages
-        });
-      } else {
-        const fail_url = window.location.origin;
-        _url = generateUnipassUrl(host, 'sign', {
-          success_url,
-          fail_url,
-          pubkey,
-          message: (data as SignTxMessage).messages
-        });
-      }
+      _url = generateUnipassNewUrl(host, 'sign', {
+        success_url,
+        pubkey,
+        message: (data as SignTxMessage).messages
+      });
       this.saveState(ActionType.CheckTickeTx, (data as SignTxMessage).data);
       window.location.href = _url;
     },

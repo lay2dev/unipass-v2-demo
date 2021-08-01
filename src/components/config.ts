@@ -11,31 +11,26 @@ export const nets = [
   //   name: '本地',
   //   url: 'http://localhost:3000/'
   // },
-  // {
-  //   name: '测试',
-  //   url: 'https://unipass-me-git-dev-lay2.vercel.app/'
-  // },
+
   {
-    name: '开发-aggron',
+    name: '测试',
     url: 'https://id.unipass.vip',
     model: 1
   },
   {
     name: '预览-aggron',
-    url: 'https://t.rc.unipass.me',
+    url: 'https://t.unipass.xyz',
     model: 0
   },
   {
     name: '预览-lina',
-    url: 'https://rc.unipass.me'
+    url: 'https://rc.unipass.xyz',
+    model: 0
   },
-  {
-    name: '正式-aggron',
-    url: 'https://t.unipass.me'
-  },
+
   {
     name: '正式-lina',
-    url: 'https://unipass.me'
+    url: 'https://unipass.xyz'
   }
 ];
 
@@ -64,7 +59,7 @@ const AggronCellDeps = [
   new CellDep(
     DepType.code,
     new OutPoint(
-      '0x82e429d6e078bdf626ee10325e366340f4decb54a2565627419450d2232b9045',
+      '0x194a0f84de41d006a07ece07c96a8130100818599fcf0b2ecf49e512b873ed6e',
       '0x2'
     )
   )
@@ -101,30 +96,6 @@ const LinaCellDeps = [
   )
 ];
 
-const TestCellDeps = [
-  new CellDep(
-    DepType.code,
-    new OutPoint(
-      '0xd7022ca7f883ffa7e067bf0ecd945fefa49b3a0c82d3edb6939f976b53a6069f',
-      '0x0'
-    )
-  ),
-  new CellDep(
-    DepType.code,
-    new OutPoint(
-      '0x363b22a0de38c31e83fb83fa7210c447a4861408f1c56502f545cfffda25d9cc',
-      '0x0'
-    )
-  ),
-  new CellDep(
-    DepType.code,
-    new OutPoint(
-      '0x3baaf7f1589eeaa2bb49a261f75fc23b01d4566b4aa9ec48fbd2d8aa75df77e1',
-      '0x0'
-    )
-  )
-];
-
 const testCKB = {
   NODE_URL: 'https://testnet.ckb.dev',
   INDEXER_URL: 'https://testnet.ckb.dev/indexer',
@@ -137,15 +108,10 @@ const mainCKB = {
 };
 
 export function saveEnvData(url: string) {
-  if (url == 'https://unipass.me' || url == 'https://rc.unipass.me') {
+  if (url == 'https://rc.unipass.xyz' || url == 'https://unipass.xyz') {
     LocalStorage.set('lina', true);
-    LocalStorage.remove('test');
-  } else if (url == 'https://unipass-me-git-dev-lay2.vercel.app/') {
-    LocalStorage.set('test', true);
-    LocalStorage.remove('lina');
   } else {
     LocalStorage.remove('lina');
-    LocalStorage.remove('test');
   }
 }
 
@@ -159,11 +125,9 @@ export function getCkbEnv(): Url {
 
 export function getCellDeps(): CellDep[] {
   const isLina = LocalStorage.getItem('lina');
-  const isTest = LocalStorage.getItem('test');
   let data = AggronCellDeps;
   if (isLina) data = LinaCellDeps;
-  if (isTest) data = TestCellDeps;
-  console.log('[cells]:', isLina, isTest, data);
+  console.log('[cells]:', isLina, data);
   return data;
 }
 
