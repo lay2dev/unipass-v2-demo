@@ -1,4 +1,4 @@
-import {
+import PWCore, {
   Address,
   AddressType,
   Blake2bHasher,
@@ -9,7 +9,6 @@ import {
   Script
 } from '@lay2/pw-core';
 import { LocalStorage } from 'quasar';
-import { getData, saveData } from './LocalData';
 
 type UP_ACT =
   | 'UP-READY'
@@ -47,10 +46,13 @@ export default class UnipassProvider extends Provider {
     return this._recovery;
   }
 
-  constructor(email: string, address: string) {
+  constructor(email: string, masterPubkey: string) {
     super(Platform.ckb);
     this._email = email;
-    this.address = new Address(address, AddressType.ckb);
+
+    const addressStr = pubkeyToAddress(masterPubkey);
+    this.address = new Address(addressStr, AddressType.ckb);
+    console.log('this.address----', this.address);
   }
 
   async init(): Promise<UnipassProvider> {
@@ -81,17 +83,10 @@ export function pubkeyToAddress(pubkey: string): string {
     .serializeJson()
     .slice(0, 42);
   const isLina = LocalStorage.getItem('lina');
-  const isTest = LocalStorage.getItem('test');
   let script: Script;
   if (isLina) {
     script = new Script(
       '0x614d40a86e1b29a8f4d8d93b9f3b390bf740803fa19a69f1c95716e029ea09b3',
-      hashHex,
-      HashType.type
-    );
-  } else if (isTest) {
-    script = new Script(
-      '0x949db47aac7d1a2a0d921344dc5c1ddefda390813a1881d56a0872d798e0d629',
       hashHex,
       HashType.type
     );
@@ -102,6 +97,8 @@ export function pubkeyToAddress(pubkey: string): string {
       HashType.type
     );
   }
+  console.log(script, PWCore.chainId);
 
-  return script.toAddress(getDefaultPrefix()).toCKBAddress();
+  console.log('before prefix', getDefaultPrefix());
+  return script.toAddress().toCKBAddress();
 }

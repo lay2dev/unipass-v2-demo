@@ -33,6 +33,7 @@ export function getDataFromUrl(): void {
     // todo save data
     if (unipassData.data.pubkey && unipassData.data.email) {
       const ckbAddress = pubkeyToAddress(unipassData.data.pubkey);
+      console.log('ckbAddress', ckbAddress);
       saveData({
         email: unipassData.data.email,
         pubkey: unipassData.data.pubkey,

@@ -317,15 +317,19 @@ export default defineComponent({
 
       getDataFromUrl();
       const data = getData();
-      if (data.address) {
-        this.address = data.address;
+      if (data.pubkey) {
+        console.log('this.address', this.address);
         const url = getCkbEnv();
+
+        PWCore.chainId = url.CHAIN_ID;
         await new PWCore(url.NODE_URL).init(
-          new UnipassProvider(data.email, data.address),
+          new UnipassProvider(data.email, data.pubkey),
           new IndexerCollector(url.INDEXER_URL),
           url.CHAIN_ID
         );
         this.provider = PWCore.provider as UnipassProvider;
+        this.address = PWCore.provider.address.addressString;
+        console.log('PWCore', PWCore.provider.address, PWCore.chainId);
       }
 
       switch (action) {
