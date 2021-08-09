@@ -85,9 +85,6 @@ export default {
       showGift: false
     };
   },
-  mounted() {
-    this.init();
-  },
 
   computed: {
     showDialog: {
@@ -111,6 +108,13 @@ export default {
           return false;
         }
       });
+    }
+  },
+  watch: {
+    show(newV, oldV) {
+      if (newV) {
+        this.init();
+      }
     }
   },
   methods: {
@@ -137,7 +141,6 @@ export default {
     async init() {
       // first page
       const data = getData();
-      console.log(data);
       if (!data.address) return;
       this.loading = true;
       const res = await getNFTData(data.address, 0, 100);

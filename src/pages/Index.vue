@@ -242,7 +242,7 @@ import UnipassProvider from 'src/components/UnipassProvider';
 import UnipassBuilder from 'src/components/UnipassBuilder';
 import UnipassSigner from 'src/components/UnipassSigner';
 import { createHash } from 'crypto';
-import { Logout, getData } from 'src/components/LocalData';
+import { Logout, getData, saveAddress } from 'src/components/LocalData';
 import { nets, saveEnvData, getCkbEnv } from 'src/components/config';
 import { getDataFromUrl, getPublick } from 'src/components/utils';
 import { LocalStorage } from 'quasar';
@@ -329,7 +329,14 @@ export default defineComponent({
         );
         this.provider = PWCore.provider as UnipassProvider;
         this.address = PWCore.provider.address.addressString;
-        console.log('PWCore', PWCore.provider.address, PWCore.chainId);
+        saveAddress(PWCore.provider.address.addressString);
+        console.log(
+          'PWCore',
+          PWCore.provider.address,
+          PWCore.chainId,
+          this.address,
+          '------'
+        );
       }
 
       switch (action) {
