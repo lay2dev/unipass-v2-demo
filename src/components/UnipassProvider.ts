@@ -78,7 +78,7 @@ export function pubkeyToAddress(pubkey: string): string {
   const pubKeyBuffer = Buffer.from(pubkey.replace('0x', ''), 'hex');
 
   const hashHex = new Blake2bHasher()
-    .update(pubKeyBuffer.buffer)
+    .update(new Uint8Array(pubKeyBuffer))
     .digest()
     .serializeJson()
     .slice(0, 42);
