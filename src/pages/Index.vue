@@ -103,7 +103,7 @@
       <q-card-section>
         <div>
           <div class="full-width">
-            <q-btn class="full-width" @click="onpenNFTList">选择NFT </q-btn>
+            <q-btn class="full-width" @click="openNFTList">选择NFT </q-btn>
           </div>
           <div>
             <div class="nft-list">
@@ -522,12 +522,9 @@ export default defineComponent({
         console.error(err);
       }
     },
-    onpenNFTList() {
-      console.log('onpenNFTList');
+    openNFTList() {
       const localData = getData();
-      console.log('onpenNFTList-', localData);
       this.address = localData.address;
-      console.log('onpenNFTList--', this.address);
       this.showSelect = true;
     },
     async postTransferNFT() {
