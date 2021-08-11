@@ -77,11 +77,13 @@ export default class UnipassProvider extends Provider {
 export function pubkeyToAddress(pubkey: string): string {
   const pubKeyBuffer = Buffer.from(pubkey.replace('0x', ''), 'hex');
 
+  console.log('pubKeyBuffer', new Uint8Array(pubKeyBuffer));
   const hashHex = new Blake2bHasher()
-    .update(new Uint8Array(pubKeyBuffer))
+    .update(pubKeyBuffer.buffer)
     .digest()
     .serializeJson()
     .slice(0, 42);
+  console.log('------hashHex', hashHex);
   const isLina = LocalStorage.getItem('lina');
   let script: Script;
   if (isLina) {
@@ -97,8 +99,7 @@ export function pubkeyToAddress(pubkey: string): string {
       HashType.type
     );
   }
-  console.log(script, PWCore.chainId);
 
-  console.log('before prefix', getDefaultPrefix());
+  console.log('script', script);
   return script.toAddress().toCKBAddress();
 }
