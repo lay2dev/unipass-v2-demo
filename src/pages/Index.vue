@@ -87,7 +87,7 @@
           color="info"
           icon="send"
           label="Send"
-          @click="send"
+          @click="bindSend"
         />
         <div class="row" style="word-break: break-all;">
           <b>TX:</b>
@@ -193,7 +193,7 @@
           color="info"
           icon="check"
           label="Sign"
-          @click="sign"
+          @click="bindSign"
         />
         <div class="row" style="word-break: break-all;">
           <b>pubkey:</b> {{ pubkey }}
@@ -506,7 +506,7 @@ export default defineComponent({
     recovery() {
       this.success = '重签功能失效';
     },
-    async send() {
+    async bindSend() {
       try {
         if (!this.provider) {
           console.log('需要登录')
@@ -528,25 +528,10 @@ export default defineComponent({
         console.log('tx', tx);
         const messages = signer.toMessages(tx);
         console.log('messages', messages);
-
-        const host = this.url;
-        const success_url = window.location.origin;
-        const fail_url = window.location.origin;
         const pubkey = this.pubkey;
-        console.log('pubkey', pubkey);
-        if (!pubkey) return;
-        // const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messages[0].message}/#sign`;
-        let _url = '';
-        _url = generateUnipassNewUrl(host, 'sign', {
-          success_url,
-          fail_url,
-          pubkey,
-          message: messages[0].message
-        });
         const txObj = transformers.TransformTransaction(tx);
         this.saveState(ActionType.SendTx, JSON.stringify({ txObj, messages }));
-        console.log(_url);
-        window.location.href = _url;
+        this.sign(messages[0].message, pubkey)
       } catch (err) {
         console.error(err);
       }
@@ -570,18 +555,8 @@ export default defineComponent({
       if (!data) return;
       const localData = getData();
       const pubkey = localData.pubkey;
-      const host = this.url;
-      const success_url = window.location.origin;
-      let _url = '';
-
-      _url = generateUnipassNewUrl(host, 'sign', {
-        success_url,
-        pubkey,
-        message: (data as SignTxMessage).messages
-      });
       this.saveState(ActionType.SendTrasnferTx, (data as SignTxMessage).data);
-      console.log(_url);
-      window.location.href = _url;
+      this.sign((data as SignTxMessage).messages, pubkey)
     },
     async sendTxCallback(sig: string, extraObj: string | undefined) {
       if (!extraObj) return;
@@ -617,19 +592,20 @@ export default defineComponent({
         console.error('send tx error', err);
       }
     },
-    sign() {
+    bindSign() {
       console.log('[sign] message: ', this.mode);
       const messageHash = createHash('SHA256')
         .update(this.message || '0x')
         .digest('hex')
         .toString();
-      const host = this.url;
-      const success_url = window.location.origin;
-
-      const pubkey = getPublick();
-      if (!this.provider || !pubkey) return;
-      // const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
       this.saveState(ActionType.SignMsg);
+      const pubkey = getPublick();
+      this.sign(messageHash, pubkey)
+    },
+    sign(messageHash: string, pubkey: string) {
+      if (!this.provider || !pubkey) return;
+      const success_url = window.location.origin;
+      const host = this.url;
       if (this.mode === 'url') {
         const url = generateUnipassNewUrl(host, 'sign', {
           success_url,
@@ -676,17 +652,8 @@ export default defineComponent({
       );
       if (!data) return;
       const pubkey = account.pubkey;
-      const host = this.url;
-      const success_url = window.location.origin;
-      let _url = '';
-
-      _url = generateUnipassNewUrl(host, 'sign', {
-        success_url,
-        pubkey,
-        message: (data as SignTxMessage).messages
-      });
       this.saveState(ActionType.CheckTickeTx, (data as SignTxMessage).data);
-      window.location.href = _url;
+      this.sign((data as SignTxMessage).messages, pubkey)
     },
     async lockTicke() {
       const account = getData();
@@ -703,16 +670,8 @@ export default defineComponent({
       );
       if (!data) return;
       const pubkey = account.pubkey;
-      const host = this.url;
-      const success_url = window.location.origin;
-      let _url = '';
-      _url = generateUnipassNewUrl(host, 'sign', {
-        success_url,
-        pubkey,
-        message: (data as SignTxMessage).messages
-      });
       this.saveState(ActionType.CheckTickeTx, (data as SignTxMessage).data);
-      window.location.href = _url;
+      this.sign((data as SignTxMessage).messages, pubkey)
     },
 
     bindLogout() {
