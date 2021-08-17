@@ -7,27 +7,20 @@ interface Url {
 }
 
 export const nets = [
-  // {
-  //   name: '本地',
-  //   url: 'http://localhost:3000/'
-  // },
-
   {
-    name: '测试',
-    url: 'https://id.unipass.vip',
+    name: '测试-aggron',
+    url: 'https://t.unipass.xyz',
     model: 1
   },
   {
-    name: '预览-aggron',
-    url: 'https://t.unipass.xyz',
-    model: 0
+    name: '本地',
+    url: 'http://localhost:5000'
   },
   {
     name: '预览-lina',
     url: 'https://rc.unipass.xyz',
     model: 0
   },
-
   {
     name: '正式-lina',
     url: 'https://unipass.xyz'

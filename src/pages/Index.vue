@@ -54,6 +54,14 @@
           label="Login"
           @click="login"
         />
+        <q-btn
+          class="full-width"
+          color="primary"
+          type="submit"
+          icon="login"
+          label="Login Popup Window"
+          @click="loginPopup"
+        />
 
         <q-btn
           class="full-width"
@@ -244,7 +252,7 @@ import UnipassSigner from 'src/components/UnipassSigner';
 import { createHash } from 'crypto';
 import { Logout, getData, saveAddress } from 'src/components/LocalData';
 import { nets, saveEnvData, getCkbEnv } from 'src/components/config';
-import { getDataFromUrl, getPublick } from 'src/components/utils';
+import { getDataFromUrl, getPublick,UnipassData } from 'src/components/utils';
 import { LocalStorage } from 'quasar';
 import createSelect from 'src/components/create-select.vue';
 import {
@@ -310,83 +318,7 @@ export default defineComponent({
     next();
   },
   async created() {
-    try {
-      const pageState = this.restoreState();
-      let action = ActionType.Init;
-      if (!!pageState) action = pageState.action;
-
-      getDataFromUrl();
-      const data = getData();
-      if (data.pubkey) {
-        console.log('this.address', this.address);
-        const url = getCkbEnv();
-
-        PWCore.chainId = url.CHAIN_ID;
-        await new PWCore(url.NODE_URL).init(
-          new UnipassProvider(data.email, data.pubkey),
-          new IndexerCollector(url.INDEXER_URL),
-          url.CHAIN_ID
-        );
-        this.provider = PWCore.provider as UnipassProvider;
-        this.address = PWCore.provider.address.addressString;
-        saveAddress(PWCore.provider.address.addressString);
-        console.log(
-          'PWCore',
-          PWCore.provider.address,
-          PWCore.chainId,
-          this.address,
-          '------'
-        );
-      }
-
-      switch (action) {
-        case ActionType.Init:
-          break;
-        case ActionType.Login:
-          this.pubkey = data.pubkey;
-
-          break;
-        case ActionType.SignMsg:
-          if (data.sig) {
-            this.pubkey = data.pubkey;
-            this.signature = `0x01${data.sig.replace('0x', '')}`;
-          }
-          break;
-        case ActionType.SendTx:
-          if (data.sig)
-            await this.sendTxCallback(data.sig, pageState?.extraObj);
-          break;
-        //SendTrasnferTx
-        case ActionType.SendTrasnferTx:
-          if (data.sig) {
-            const url = getCkbEnv();
-            const extra = pageState?.extraObj as string;
-            const txhash = await getNFTransferSignCallback(
-              data.sig,
-              extra,
-              url.NODE_URL
-            );
-            this.txHash = txhash;
-          }
-
-          break;
-        case ActionType.CheckTickeTx:
-          if (data.sig) {
-            const url = getCkbEnv();
-            const extra = pageState?.extraObj as string;
-            const txhash = await getTicketTransferSignCallback(
-              data.sig,
-              extra,
-              url.NODE_URL
-            );
-            this.txHash = txhash;
-          }
-
-          break;
-      }
-    } catch (e) {
-      return;
-    }
+    await this.init()
   },
   setup() {
     const urls = nets;
@@ -424,6 +356,85 @@ export default defineComponent({
   },
 
   methods: {
+    async init(unipassData?: UnipassData) {
+      try {
+        const pageState = this.restoreState();
+        let action = ActionType.Init;
+        if (!!pageState) action = pageState.action;
+        getDataFromUrl(unipassData);
+        const data = getData();
+        if (data.pubkey) {
+          console.log('this.address', this.address);
+          const url = getCkbEnv();
+
+          PWCore.chainId = url.CHAIN_ID;
+          await new PWCore(url.NODE_URL).init(
+            new UnipassProvider(data.email, data.pubkey),
+            new IndexerCollector(url.INDEXER_URL),
+            url.CHAIN_ID
+          );
+          this.provider = PWCore.provider as UnipassProvider;
+          this.address = PWCore.provider.address.addressString;
+          saveAddress(PWCore.provider.address.addressString);
+          console.log(
+            'PWCore',
+            PWCore.provider.address,
+            PWCore.chainId,
+            this.address,
+            '------'
+          );
+        }
+        switch (action) {
+          case ActionType.Init:
+            break;
+          case ActionType.Login:
+            this.pubkey = data.pubkey;
+
+            break;
+          case ActionType.SignMsg:
+            if (data.sig) {
+              this.pubkey = data.pubkey;
+              this.signature = `0x01${data.sig.replace('0x', '')}`;
+            }
+            break;
+          case ActionType.SendTx:
+            if (data.sig)
+              await this.sendTxCallback(data.sig, pageState?.extraObj);
+            break;
+          //SendTrasnferTx
+          case ActionType.SendTrasnferTx:
+            if (data.sig) {
+              const url = getCkbEnv();
+              const extra = pageState?.extraObj as string;
+              const txhash = await getNFTransferSignCallback(
+                data.sig,
+                extra,
+                url.NODE_URL
+              );
+              this.txHash = txhash;
+            }
+
+            break;
+          case ActionType.CheckTickeTx:
+            if (data.sig) {
+              const url = getCkbEnv();
+              const extra = pageState?.extraObj as string;
+              const txhash = await getTicketTransferSignCallback(
+                data.sig,
+                extra,
+                url.NODE_URL
+              );
+              this.txHash = txhash;
+            }
+
+            break;
+        }
+      } catch (err) {
+        console.log('🌊', err)
+        return
+      }
+
+    },
     bindSelect(nfts: any[], checked: any[]) {
       this.nfts = nfts;
       this.nftChecked = checked;
@@ -476,6 +487,21 @@ export default defineComponent({
         success_url
       });
       this.saveState(ActionType.Login);
+    },
+    loginPopup() {
+      window.open(
+        // 'http://localhost:5000/login?success_url=open',
+        generateUnipassNewUrl( this.url,'login',{success_url: 'open'}),
+        '',
+        'width=380,height=675,top=40,left=100,toolbar=no,scrollbars=yes,location=no,status=no',
+      )
+      window.addEventListener('message', (event) => {
+        // eslint-disable-next-line
+        if (event.data && event.data.code === 200) {
+          // eslint-disable-next-line
+          this.init(event.data)
+        }
+      }, false);
     },
     recovery() {
       this.success = '重签功能失效';

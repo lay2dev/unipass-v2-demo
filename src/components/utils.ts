@@ -5,7 +5,7 @@ import { getData, saveData } from './LocalData';
 import { pubkeyToAddress } from './UnipassProvider';
 import { Notify } from 'quasar';
 
-interface UnipassData {
+export interface UnipassData {
   data: {
     email?: string;
     pubkey?: string;
@@ -15,19 +15,22 @@ interface UnipassData {
   info: string;
   code: number;
 }
-export function getDataFromUrl(): void {
+export function getDataFromUrl(unipassData?: UnipassData): void {
+  console.log('🌊', unipassData);
   const url = new URL(window.location.href);
-  console.log('getDataFromUrl--', url);
-  let data = '';
-  try {
-    data = url.searchParams.get('unipass_ret') as string;
-  } catch (e) {
-    console.log('getDataFromUrl-e', e);
-    return;
+  if (!unipassData) {
+    console.log('getDataFromUrl--', url);
+    let data = '';
+    try {
+      data = url.searchParams.get('unipass_ret') as string;
+    } catch (e) {
+      console.log('getDataFromUrl-e', e);
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const unipassStr = urlencode.decode(data, 'utf-8');
+    unipassData = JSON.parse(unipassStr) as UnipassData;
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  const unipassStr = urlencode.decode(data, 'utf-8');
-  const unipassData = JSON.parse(unipassStr) as UnipassData;
   console.log(unipassData);
   if (unipassData.code === 200) {
     // todo save data
