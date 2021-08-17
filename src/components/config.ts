@@ -13,7 +13,7 @@ export const nets = [
     model: 1
   },
   {
-    name: '本地',
+    name: '本地-aggron',
     url: 'http://localhost:5000'
   },
   {

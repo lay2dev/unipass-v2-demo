@@ -7,8 +7,8 @@
     />
     <q-card class="my-card">
       <q-card-section class="row justify-around">
-        <q-radio v-model="mode" val="webauthn" label="Webauthn" />
-        <q-radio v-model="mode" val="subtle" label="Subtle" />
+        <q-radio v-model="mode" val="url" label="URL-Subtle" />
+        <q-radio v-model="mode" val="popup" label="Popup-Subtle" />
         <div>
           <q-field> {{ url }}</q-field>
           <q-select
@@ -52,15 +52,7 @@
           type="submit"
           icon="login"
           label="Login"
-          @click="login"
-        />
-        <q-btn
-          class="full-width"
-          color="primary"
-          type="submit"
-          icon="login"
-          label="Login Popup Window"
-          @click="loginPopup"
+          @click="bindLogin"
         />
 
         <q-btn
@@ -68,7 +60,7 @@
           color="info"
           icon="check"
           label="Logout"
-          @click="logout"
+          @click="bindLogout"
         />
       </q-card-section>
       <q-separator spaced />
@@ -324,7 +316,7 @@ export default defineComponent({
     const urls = nets;
     let provider = ref<UnipassProvider>();
 
-    const mode = ref('subtle');
+    const mode = ref('url');
     const message = ref('');
     const signature = ref('');
     const pubkey = ref('');
@@ -430,7 +422,7 @@ export default defineComponent({
             break;
         }
       } catch (err) {
-        console.log('🌊', err)
+        console.log(err)
         return
       }
 
@@ -480,6 +472,13 @@ export default defineComponent({
 
       return pageState;
     },
+    bindLogin() {
+      if (this.mode ==='url') {
+        this.login()
+      } else {
+        this.loginPopup()
+      }
+    },
     login() {
       const host = this.url;
       const success_url = window.location.origin;
@@ -487,6 +486,7 @@ export default defineComponent({
         success_url
       });
       this.saveState(ActionType.Login);
+
     },
     loginPopup() {
       window.open(
@@ -508,7 +508,10 @@ export default defineComponent({
     },
     async send() {
       try {
-        if (!this.provider) throw new Error('Need Login');
+        if (!this.provider) {
+          console.log('需要登录')
+          return
+        }
         console.log(
           'this.provider.address',
           this.provider.address.toCKBAddress()
@@ -626,16 +629,33 @@ export default defineComponent({
       const pubkey = getPublick();
       if (!this.provider || !pubkey) return;
       // const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
-      let _url = '';
-
-      _url = generateUnipassNewUrl(host, 'sign', {
-        success_url,
-        pubkey,
-        message: messageHash
-      });
       this.saveState(ActionType.SignMsg);
-      console.log(_url);
-      window.location.href = _url;
+      if (this.mode === 'url') {
+        const url = generateUnipassNewUrl(host, 'sign', {
+          success_url,
+          pubkey,
+          message: messageHash
+        });
+        window.location.href = url;
+      } else {
+        const url = generateUnipassNewUrl(host,'sign',{
+          success_url: 'open',
+          pubkey,
+          message: messageHash
+        })
+        window.open(
+          url,
+          '',
+          'width=380,height=675,top=40,left=100,toolbar=no,scrollbars=yes,location=no,status=no',
+        )
+        window.addEventListener('message', (event) => {
+          // eslint-disable-next-line
+          if (event.data && event.data.code === 200) {
+            // eslint-disable-next-line
+            this.init(event.data)
+          }
+        }, false);
+      }
     },
     goto(url: string) {
       window.location.href = url;
@@ -695,7 +715,7 @@ export default defineComponent({
       window.location.href = _url;
     },
 
-    logout() {
+    bindLogout() {
       Logout();
       void window.location.reload();
     }

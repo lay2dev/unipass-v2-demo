@@ -16,7 +16,6 @@ export interface UnipassData {
   code: number;
 }
 export function getDataFromUrl(unipassData?: UnipassData): void {
-  console.log('🌊', unipassData);
   const url = new URL(window.location.href);
   if (!unipassData) {
     console.log('getDataFromUrl--', url);
