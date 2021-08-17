@@ -602,8 +602,12 @@ export default defineComponent({
       const pubkey = getPublick();
       this.sign(messageHash, pubkey)
     },
-    sign(messageHash: string, pubkey: string) {
-      if (!this.provider || !pubkey) return;
+    sign(messageHash: string, pubkey_: string) {
+      const pubkey = pubkey_ || getPublick()
+      if (!pubkey) {
+        console.log('pubkey 不存在')
+        return
+      };
       const success_url = window.location.origin;
       const host = this.url;
       if (this.mode === 'url') {
