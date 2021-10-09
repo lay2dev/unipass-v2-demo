@@ -187,6 +187,10 @@
             type="text"
             label="Message"
           />
+          <q-toggle
+            v-model="signVisualization"
+            label="Sign Visualization"
+          />
         </div>
         <q-btn
           class="full-width"
@@ -343,7 +347,8 @@ export default defineComponent({
       nfts,
       nftChecked,
       address: ref(''),
-      showSelect: ref(false)
+      showSelect: ref(false),
+      signVisualization: true,
     };
   },
 
@@ -594,13 +599,16 @@ export default defineComponent({
     },
     bindSign() {
       console.log('[sign] message: ', this.mode);
-      const messageHash = createHash('SHA256')
-        .update(this.message || '0x')
-        .digest('hex')
-        .toString();
+      let message = encodeURIComponent(this.message)
+      if (!this.signVisualization) {
+        message = createHash('SHA256')
+          .update(message || '0x')
+          .digest('hex')
+          .toString();
+      }
       this.saveState(ActionType.SignMsg);
       const pubkey = getPublick();
-      this.sign(messageHash, pubkey)
+      this.sign(message, pubkey)
     },
     sign(messageHash: string, pubkey_: string) {
       const pubkey = pubkey_ || getPublick()

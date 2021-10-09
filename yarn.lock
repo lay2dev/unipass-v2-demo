@@ -1470,6 +1470,11 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-12.20.6.tgz"
   integrity sha512-sRVq8d+ApGslmkE9e3i+D3gFGk7aZHAT+G4cIpIEdLJYPsWiSPwcAnJEjddLQQDqV3Ra2jOclX/Sv6YrvGYiWA==
 
+"@types/node@^16.7.10":
+  version "16.10.3"
+  resolved "https://registry.npmjs.org/@types/node/-/node-16.10.3.tgz#7a8f2838603ea314d1d22bb3171d899e15c57bd5"
+  integrity sha512-ho3Ruq+fFnBrZhUYI46n/bV2GjwzSkwuT4dTf0GkuNFmnb8nq4ny2z9JEVemFi6bdEJanHLlYfy9c6FN9B9McQ==
+
 "@types/pbkdf2@^3.0.0":
   version "3.1.0"
   resolved "https://registry.npmjs.org/@types/pbkdf2/-/pbkdf2-3.1.0.tgz"
@@ -3427,6 +3432,11 @@ crypto-browserify@3.12.0, crypto-browserify@^3.11.0:
     public-encrypt "^4.0.0"
     randombytes "^2.0.0"
     randomfill "^1.0.3"
+
+crypto@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/crypto/-/crypto-1.0.1.tgz#2af1b7cad8175d24c8a1b0778255794a21803037"
+  integrity sha512-VxBKmeNcqQdiUQUW2Tzq0t377b54N2bMtXO/qiLa+6eRRmmC4qT3D4OnTGoT/U6O9aklQ/jTwbOtRMTTY8G0Ig==
 
 css-color-names@0.0.4, css-color-names@^0.0.4:
   version "0.0.4"
@@ -9632,6 +9642,11 @@ typescript@4.2.2:
   resolved "https://registry.npmjs.org/typescript/-/typescript-4.2.2.tgz"
   integrity sha512-tbb+NVrLfnsJy3M59lsDgrzWIflR4d4TIUjz+heUnHZwdF7YsrMTKoRERiIvI2lvBG95dfpLxB21WZhys1bgaQ==
 
+typescript@^4.4.2:
+  version "4.4.3"
+  resolved "https://registry.npmjs.org/typescript/-/typescript-4.4.3.tgz#bdc5407caa2b109efd4f82fe130656f977a29324"
+  integrity sha512-4xfscpisVgqqDfPaJo5vkd+Qd/ItkoagnHpufr+i2QCHBsNYp+G7UAoyFl8aPtx879u38wPV65rZ8qbGZijalA==
+
 uglify-js@^3.5.1:
   version "3.13.2"
   resolved "https://registry.npmjs.org/uglify-js/-/uglify-js-3.13.2.tgz"
@@ -9694,6 +9709,15 @@ union-value@^1.0.0:
     get-value "^2.0.6"
     is-extendable "^0.1.1"
     set-value "^2.0.1"
+
+unipass-js-sdk@^1.0.7:
+  version "1.0.7"
+  resolved "https://registry.npmjs.org/unipass-js-sdk/-/unipass-js-sdk-1.0.7.tgz#e19377c72faa8f92615c151c9a8fe724ed7f1e0c"
+  integrity sha512-+tYCPlcwU6AODVmRoM6jG8V5EZEbG05MG58wRfnK83VFhbdfjajseVlzneaOIosXv1jiHfw6rTFpNnSnd5k0kw==
+  dependencies:
+    "@types/node" "^16.7.10"
+    crypto "^1.0.1"
+    typescript "^4.4.2"
 
 uniq@^1.0.1:
   version "1.0.1"
