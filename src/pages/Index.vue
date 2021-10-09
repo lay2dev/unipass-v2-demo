@@ -620,6 +620,7 @@ export default defineComponent({
       const host = this.url;
       if (this.mode === 'url') {
         const url = generateUnipassNewUrl(host, 'sign', {
+          type: this.signVisualization ? 'personal_sign' : '',
           success_url,
           pubkey,
           message: messageHash
@@ -627,6 +628,7 @@ export default defineComponent({
         window.location.href = url;
       } else {
         const url = generateUnipassNewUrl(host,'sign',{
+          type: this.signVisualization ? 'personal_sign' : '',
           success_url: 'open',
           pubkey,
           message: messageHash
