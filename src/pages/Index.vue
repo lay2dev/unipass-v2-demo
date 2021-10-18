@@ -7,8 +7,8 @@
     />
     <q-card class="my-card">
       <q-card-section class="row justify-around">
-        <q-radio v-model="mode" val="url" label="URL-Subtle" />
-        <q-radio v-model="mode" val="popup" label="Popup-Subtle" />
+        <q-radio v-model="mode" val="webauthn" label="Webauthn" />
+        <q-radio v-model="mode" val="subtle" label="Subtle" />
         <div>
           <q-field> {{ url }}</q-field>
           <q-select
@@ -52,7 +52,7 @@
           type="submit"
           icon="login"
           label="Login"
-          @click="bindLogin"
+          @click="login"
         />
 
         <q-btn
@@ -60,7 +60,7 @@
           color="info"
           icon="check"
           label="Logout"
-          @click="bindLogout"
+          @click="logout"
         />
       </q-card-section>
       <q-separator spaced />
@@ -87,7 +87,7 @@
           color="info"
           icon="send"
           label="Send"
-          @click="bindSend"
+          @click="send"
         />
         <div class="row" style="word-break: break-all;">
           <b>TX:</b>
@@ -187,17 +187,13 @@
             type="text"
             label="Message"
           />
-          <q-toggle
-            v-model="signVisualization"
-            label="Sign Visualization"
-          />
         </div>
         <q-btn
           class="full-width"
           color="info"
           icon="check"
           label="Sign"
-          @click="bindSign"
+          @click="sign"
         />
         <div class="row" style="word-break: break-all;">
           <b>pubkey:</b> {{ pubkey }}
@@ -248,7 +244,7 @@ import UnipassSigner from 'src/components/UnipassSigner';
 import { createHash } from 'crypto';
 import { Logout, getData, saveAddress } from 'src/components/LocalData';
 import { nets, saveEnvData, getCkbEnv } from 'src/components/config';
-import { getDataFromUrl, getPublick,UnipassData } from 'src/components/utils';
+import { getDataFromUrl, getPublick } from 'src/components/utils';
 import { LocalStorage } from 'quasar';
 import createSelect from 'src/components/create-select.vue';
 import {
@@ -314,13 +310,89 @@ export default defineComponent({
     next();
   },
   async created() {
-    await this.init()
+    try {
+      const pageState = this.restoreState();
+      let action = ActionType.Init;
+      if (!!pageState) action = pageState.action;
+
+      getDataFromUrl();
+      const data = getData();
+      if (data.pubkey) {
+        console.log('this.address', this.address);
+        const url = getCkbEnv();
+
+        PWCore.chainId = url.CHAIN_ID;
+        await new PWCore(url.NODE_URL).init(
+          new UnipassProvider(data.email, data.pubkey),
+          new IndexerCollector(url.INDEXER_URL),
+          url.CHAIN_ID
+        );
+        this.provider = PWCore.provider as UnipassProvider;
+        this.address = PWCore.provider.address.addressString;
+        saveAddress(PWCore.provider.address.addressString);
+        console.log(
+          'PWCore',
+          PWCore.provider.address,
+          PWCore.chainId,
+          this.address,
+          '------'
+        );
+      }
+
+      switch (action) {
+        case ActionType.Init:
+          break;
+        case ActionType.Login:
+          this.pubkey = data.pubkey;
+
+          break;
+        case ActionType.SignMsg:
+          if (data.sig) {
+            this.pubkey = data.pubkey;
+            this.signature = `0x01${data.sig.replace('0x', '')}`;
+          }
+          break;
+        case ActionType.SendTx:
+          if (data.sig)
+            await this.sendTxCallback(data.sig, pageState?.extraObj);
+          break;
+        //SendTrasnferTx
+        case ActionType.SendTrasnferTx:
+          if (data.sig) {
+            const url = getCkbEnv();
+            const extra = pageState?.extraObj as string;
+            const txhash = await getNFTransferSignCallback(
+              data.sig,
+              extra,
+              url.NODE_URL
+            );
+            this.txHash = txhash;
+          }
+
+          break;
+        case ActionType.CheckTickeTx:
+          if (data.sig) {
+            const url = getCkbEnv();
+            const extra = pageState?.extraObj as string;
+            const txhash = await getTicketTransferSignCallback(
+              data.sig,
+              extra,
+              url.NODE_URL
+            );
+            this.txHash = txhash;
+          }
+
+          break;
+      }
+    } catch (e) {
+      return;
+    }
   },
   setup() {
     const urls = nets;
     let provider = ref<UnipassProvider>();
 
-    const mode = ref('url');
+    const mode = ref('subtle');
     const message = ref('');
     const signature = ref('');
     const pubkey = ref('');
@@ -347,91 +419,11 @@ export default defineComponent({
       nfts,
       nftChecked,
       address: ref(''),
-      showSelect: ref(false),
-      signVisualization: true,
+      showSelect: ref(false)
     };
   },
 
   methods: {
-    async init(unipassData?: UnipassData) {
-      try {
-        const pageState = this.restoreState();
-        let action = ActionType.Init;
-        if (!!pageState) action = pageState.action;
-        getDataFromUrl(unipassData);
-        const data = getData();
-        if (data.pubkey) {
-          console.log('this.address', this.address);
-          const url = getCkbEnv();
-
-          PWCore.chainId = url.CHAIN_ID;
-          await new PWCore(url.NODE_URL).init(
-            new UnipassProvider(data.email, data.pubkey),
-            new IndexerCollector(url.INDEXER_URL),
-            url.CHAIN_ID
-          );
-          this.provider = PWCore.provider as UnipassProvider;
-          this.address = PWCore.provider.address.addressString;
-          saveAddress(PWCore.provider.address.addressString);
-          console.log(
-            'PWCore',
-            PWCore.provider.address,
-            PWCore.chainId,
-            this.address,
-            '------'
-          );
-        }
-        switch (action) {
-          case ActionType.Init:
-            break;
-          case ActionType.Login:
-            this.pubkey = data.pubkey;
-
-            break;
-          case ActionType.SignMsg:
-            if (data.sig) {
-              this.pubkey = data.pubkey;
-              this.signature = `0x01${data.sig.replace('0x', '')}`;
-            }
-            break;
-          case ActionType.SendTx:
-            if (data.sig)
-              await this.sendTxCallback(data.sig, pageState?.extraObj);
-            break;
-          //SendTrasnferTx
-          case ActionType.SendTrasnferTx:
-            if (data.sig) {
-              const url = getCkbEnv();
-              const extra = pageState?.extraObj as string;
-              const txhash = await getNFTransferSignCallback(
-                data.sig,
-                extra,
-                url.NODE_URL
-              );
-              this.txHash = txhash;
-            }
-
-            break;
-          case ActionType.CheckTickeTx:
-            if (data.sig) {
-              const url = getCkbEnv();
-              const extra = pageState?.extraObj as string;
-              const txhash = await getTicketTransferSignCallback(
-                data.sig,
-                extra,
-                url.NODE_URL
-              );
-              this.txHash = txhash;
-            }
-
-            break;
-        }
-      } catch (err) {
-        console.log(err)
-        return
-      }
-
-    },
     bindSelect(nfts: any[], checked: any[]) {
       this.nfts = nfts;
       this.nftChecked = checked;
@@ -477,13 +469,6 @@ export default defineComponent({
 
       return pageState;
     },
-    bindLogin() {
-      if (this.mode ==='url') {
-        this.login()
-      } else {
-        this.loginPopup()
-      }
-    },
     login() {
       const host = this.url;
       const success_url = window.location.origin;
@@ -491,32 +476,13 @@ export default defineComponent({
         success_url
       });
       this.saveState(ActionType.Login);
-
-    },
-    loginPopup() {
-      window.open(
-        // 'http://localhost:5000/login?success_url=open',
-        generateUnipassNewUrl( this.url,'login',{success_url: 'open'}),
-        '',
-        'width=380,height=675,top=40,left=100,toolbar=no,scrollbars=yes,location=no,status=no',
-      )
-      window.addEventListener('message', (event) => {
-        // eslint-disable-next-line
-        if (event.data && event.data.code === 200) {
-          // eslint-disable-next-line
-          this.init(event.data)
-        }
-      }, false);
     },
     recovery() {
       this.success = '重签功能失效';
     },
-    async bindSend() {
+    async send() {
       try {
-        if (!this.provider) {
-          console.log('需要登录')
-          return
-        }
+        if (!this.provider) throw new Error('Need Login');
         console.log(
           'this.provider.address',
           this.provider.address.toCKBAddress()
@@ -533,10 +499,25 @@ export default defineComponent({
         console.log('tx', tx);
         const messages = signer.toMessages(tx);
         console.log('messages', messages);
+
+        const host = this.url;
+        const success_url = window.location.origin;
+        const fail_url = window.location.origin;
         const pubkey = this.pubkey;
+        console.log('pubkey', pubkey);
+        if (!pubkey) return;
+        // const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messages[0].message}/#sign`;
+        let _url = '';
+        _url = generateUnipassNewUrl(host, 'sign', {
+          success_url,
+          fail_url,
+          pubkey,
+          message: messages[0].message
+        });
         const txObj = transformers.TransformTransaction(tx);
         this.saveState(ActionType.SendTx, JSON.stringify({ txObj, messages }));
-        this.sign(messages[0].message, pubkey)
+        console.log(_url);
+        window.location.href = _url;
       } catch (err) {
         console.error(err);
       }
@@ -560,8 +541,18 @@ export default defineComponent({
       if (!data) return;
       const localData = getData();
       const pubkey = localData.pubkey;
+      const host = this.url;
+      const success_url = window.location.origin;
+      let _url = '';
+
+      _url = generateUnipassNewUrl(host, 'sign', {
+        success_url,
+        pubkey,
+        message: (data as SignTxMessage).messages
+      });
       this.saveState(ActionType.SendTrasnferTx, (data as SignTxMessage).data);
-      this.sign((data as SignTxMessage).messages, pubkey)
+      console.log(_url);
+      window.location.href = _url;
     },
     async sendTxCallback(sig: string, extraObj: string | undefined) {
       if (!extraObj) return;
@@ -591,61 +582,34 @@ export default defineComponent({
         const rpc = new RPC(url.NODE_URL);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        this.txHash = await rpc.send_transaction(txObj);
+        this.txHash = await rpc.send_transaction(txObj, 'passthrough');
         console.log('this.txHash', this.txHash);
       } catch (err) {
         console.error('send tx error', err);
       }
     },
-    bindSign() {
+    sign() {
       console.log('[sign] message: ', this.mode);
-      let message = encodeURIComponent(this.message)
-      if (!this.signVisualization) {
-        message = createHash('SHA256')
-          .update(message || '0x')
-          .digest('hex')
-          .toString();
-      }
-      this.saveState(ActionType.SignMsg);
-      const pubkey = getPublick();
-      this.sign(message, pubkey)
-    },
-    sign(messageHash: string, pubkey_: string) {
-      const pubkey = pubkey_ || getPublick()
-      if (!pubkey) {
-        console.log('pubkey 不存在')
-        return
-      };
-      const success_url = window.location.origin;
+      const messageHash = createHash('SHA256')
+        .update(this.message || '0x')
+        .digest('hex')
+        .toString();
       const host = this.url;
-      if (this.mode === 'url') {
-        const url = generateUnipassNewUrl(host, 'sign', {
-          type: this.signVisualization ? 'personal_sign' : '',
-          success_url,
-          pubkey,
-          message: messageHash
-        });
-        window.location.href = url;
-      } else {
-        const url = generateUnipassNewUrl(host,'sign',{
-          type: this.signVisualization ? 'personal_sign' : '',
-          success_url: 'open',
-          pubkey,
-          message: messageHash
-        })
-        window.open(
-          url,
-          '',
-          'width=380,height=675,top=40,left=100,toolbar=no,scrollbars=yes,location=no,status=no',
-        )
-        window.addEventListener('message', (event) => {
-          // eslint-disable-next-line
-          if (event.data && event.data.code === 200) {
-            // eslint-disable-next-line
-            this.init(event.data)
-          }
-        }, false);
-      }
+      const success_url = window.location.origin;
+
+      const pubkey = getPublick();
+      if (!this.provider || !pubkey) return;
+      // const _url = `${host}?success_url=${success_url}&fail_url=${fail_url}&pubkey=${pubkey}&message=${messageHash}/#sign`;
+      let _url = '';
+
+      _url = generateUnipassNewUrl(host, 'sign', {
+        success_url,
+        pubkey,
+        message: messageHash
+      });
+      this.saveState(ActionType.SignMsg);
+      console.log(_url);
+      window.location.href = _url;
     },
     goto(url: string) {
       window.location.href = url;
@@ -666,8 +630,17 @@ export default defineComponent({
       );
       if (!data) return;
       const pubkey = account.pubkey;
+      const host = this.url;
+      const success_url = window.location.origin;
+      let _url = '';
+
+      _url = generateUnipassNewUrl(host, 'sign', {
+        success_url,
+        pubkey,
+        message: (data as SignTxMessage).messages
+      });
       this.saveState(ActionType.CheckTickeTx, (data as SignTxMessage).data);
-      this.sign((data as SignTxMessage).messages, pubkey)
+      window.location.href = _url;
     },
     async lockTicke() {
       const account = getData();
@@ -684,11 +657,19 @@ export default defineComponent({
       );
       if (!data) return;
       const pubkey = account.pubkey;
+      const host = this.url;
+      const success_url = window.location.origin;
+      let _url = '';
+      _url = generateUnipassNewUrl(host, 'sign', {
+        success_url,
+        pubkey,
+        message: (data as SignTxMessage).messages
+      });
       this.saveState(ActionType.CheckTickeTx, (data as SignTxMessage).data);
-      this.sign((data as SignTxMessage).messages, pubkey)
+      window.location.href = _url;
     },
 
-    bindLogout() {
+    logout() {
       Logout();
       void window.location.reload();
     }
