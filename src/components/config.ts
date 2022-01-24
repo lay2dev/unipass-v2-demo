@@ -38,7 +38,7 @@ const AggronCellDeps = [
   new CellDep(
     DepType.code,
     new OutPoint(
-      '0x3d41e1c543f0fddcbb17157d15a2845d7c5fb0363561cd8f50ecd0e118b34f84',
+      '0x65080f85a9c270c1208cc8648f8d73dfb630bab659699f56fb27cff9039c5820',
       '0x0'
     )
   ),
@@ -52,7 +52,7 @@ const AggronCellDeps = [
   new CellDep(
     DepType.code,
     new OutPoint(
-      '0x3ecf42927509645dec38667d557dd9ba20d0d07267d769983495c1b6b9c70cc4',
+      '0xf11ccb6079c1a4b3d86abe2c574c5db8d2fd3505fdc1d5970b69b31864a4bd1c',
       '0x2'
     )
   )
